@@ -3,7 +3,7 @@ if (!defined('DB_HOST')) {
 	define('DB_HOST', 'localhost');
 }
 if (!defined('DB_NAME')) {
-	define('DB_NAME', 'ddb239154');
+	define('DB_NAME', 'proyecte_servidor1');
 }
 if (!defined('DB_USER')) {
 	define('DB_USER', 'root');

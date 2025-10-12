@@ -2,46 +2,52 @@
 // model/pokemon.php
 // CRUD básico para pokemons / elementos
 
-$conn = require __DIR__ . '/db.php';
+
+$nom_variable_connexio = require __DIR__ . '/db.php';
 
 function getAllPokemons($limit = 100, $offset = 0) {
-    global $conn;
-    $query = "SELECT * FROM elementos ORDER BY id DESC LIMIT ? OFFSET ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('ii', $limit, $offset);
+    global $nom_variable_connexio;
+    $sql = "SELECT * FROM pokemons ORDER BY id DESC LIMIT :limit OFFSET :offset";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
     $stmt->execute();
-    return $stmt->get_result();
+    return $stmt->fetchAll();
 }
 
 function getPokemonById($id) {
-    global $conn;
-    $query = "SELECT * FROM elementos WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $id);
+    global $nom_variable_connexio;
+    $sql = "SELECT * FROM pokemons WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
     $stmt->execute();
-    return $stmt->get_result()->fetch_assoc();
+    return $stmt->fetch();
 }
 
 function insertPokemon($titulo, $descripcion = null) {
-    global $conn;
-    $query = "INSERT INTO elementos (titulo, descripcion) VALUES (?, ?)";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('ss', $titulo, $descripcion);
-    return $stmt->execute();
+    global $nom_variable_connexio;
+    $sql = "INSERT INTO pokemons (titulo, descripcion) VALUES (:titulo, :descripcion)";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    return $stmt->execute([
+        ':titulo' => $titulo,
+        ':descripcion' => $descripcion
+    ]);
 }
 
 function updatePokemon($id, $titulo, $descripcion = null) {
-    global $conn;
-    $query = "UPDATE elementos SET titulo = ?, descripcion = ? WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('ssi', $titulo, $descripcion, $id);
-    return $stmt->execute();
+    global $nom_variable_connexio;
+    $sql = "UPDATE pokemons SET titulo = :titulo, descripcion = :descripcion WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    return $stmt->execute([
+        ':titulo' => $titulo,
+        ':descripcion' => $descripcion,
+        ':id' => $id
+    ]);
 }
 
 function deletePokemon($id) {
-    global $conn;
-    $query = "DELETE FROM elementos WHERE id = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param('i', $id);
-    return $stmt->execute();
+    global $nom_variable_connexio;
+    $sql = "DELETE FROM pokemons WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    return $stmt->execute([':id' => $id]);
 }
