@@ -1,10 +1,9 @@
 <?php
-require_once __DIR__ . '/../model/pokemon.php';
+require_once __DIR__ . '/../controller/paginacio.controller.php';
 
 // Pequeño helper para escapar HTML
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
 
-$result = getAllPokemons(200, 0);
 $ok = isset($_GET['ok']) ? $_GET['ok'] : null;
 $error = isset($_GET['error']) ? $_GET['error'] : null;
 ?>
@@ -17,7 +16,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <title>PokéNet Social - Red Social Pokémon</title>
     <link rel="stylesheet" href="style/styles.css">
 </head>
-<body>
+<body class="no-page-scroll">
     <!-- Navbar tipo Instagram -->
     <nav class="navbar">
         <div class="navbar-container">
@@ -29,8 +28,36 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         </div>
     </nav>
 
-    <!-- Contenedor principal -->
-    <div class="container">
+    <div class="main-wrapper">
+        <!-- Panel lateral izquierdo -->
+        <div class="sidebar-left">
+            <!-- Botón insertar -->
+            <a href="view/insertar.vista.php" class="btn-capturar">
+                <span class="icon">⚡</span>
+                <span>Capturar Pokémon</span>
+            </a>
+            
+            <!-- Selector de elementos por página -->
+            <form method="get" action="index.php" class="per-page-selector">
+                <label for="perPage">Pokémons por página:</label>
+                <select name="perPage" id="perPage" onchange="this.form.submit()">
+                    <option value="2" <?= $perPage==2?'selected':'' ?>>2</option>
+                    <option value="5" <?= $perPage==5?'selected':'' ?>>5</option>
+                    <option value="10" <?= $perPage==10?'selected':'' ?>>10</option>
+                    <option value="20" <?= $perPage==20?'selected':'' ?>>20</option>
+                </select>
+                <!-- Si hay otros parámetros, mantenerlos excepto page -->
+                <?php foreach($_GET as $k=>$v) {
+                    if($k !== 'perPage' && $k !== 'page') { ?>
+                        <input type="hidden" name="<?= e($k) ?>" value="<?= e($v) ?>">
+                <?php }
+                } ?>
+                <input type="hidden" name="page" value="1">
+            </form>
+        </div>
+        
+        <div class="posts-container">
+            <div class="posts-scroll">
         <?php if ($ok): ?>
             <div class="alert success">✅ <?= e($ok) ?></div>
         <?php endif; ?>
@@ -38,19 +65,19 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             <div class="alert error">❌ <?= e($error) ?></div>
         <?php endif; ?>
 
-        <?php if ($result === false): ?>
+    <?php if ($pokemons === false): ?>
             <div class="empty">
                 <h3>⚠️ Error de conexión</h3>
                 <p>No se pudo obtener la lista. Revisa la conexión y que exista la tabla <strong>pokemons</strong>.</p>
             </div>
-        <?php elseif (count($result) === 0): ?>
+    <?php elseif (count($pokemons) === 0): ?>
             <div class="empty">
                 <h3>🔍 ¡La aventura comienza aquí!</h3>
                 <p>Sé el primero en compartir tu Pokémon en PokéNet Social. ¡Empieza tu colección ahora!</p>
             </div>
         <?php else: ?>
             <!-- Posts tipo Instagram -->
-            <?php foreach ($result as $row): ?>
+            <?php foreach ($pokemons as $row): ?>
                 <div class="post-card">
                     <div class="post-avatar"><?= e(strtoupper(substr($row['titulo'], 0, 1))) ?></div>
                     <div class="post-main">
@@ -75,15 +102,26 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>
+            </div>
+            
+            <!-- Paginación fija -->
+            <div class="pagination pagination-fixed">
+                <?php if ($totalPages > 1): ?>
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <?php
+                            $params = $_GET;
+                            $params['page'] = $i;
+                            $params['perPage'] = $perPage;
+                            $url = 'index.php?' . http_build_query($params);
+                        ?>
+                        <a href="<?= e($url) ?>" class="<?= $i == $page ? 'active' : '' ?>">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
-
-    <!-- Footer fijo con botón insertar -->
-    <footer class="footer-insertar">
-        <a href="view/insertar.vista.php" class="footer-insertar-btn">
-            <span class="footer-insertar-icon">⚡</span>
-            <span class="footer-insertar-text">¿Qué Pokémon has capturado hoy?</span>
-        </a>
-    </footer>
 
     <script>
     // Limpia ?ok y ?error de la URL tras mostrar el mensaje

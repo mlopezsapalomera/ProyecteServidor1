@@ -51,3 +51,12 @@ function deletePokemon($id) {
     $stmt = $nom_variable_connexio->prepare($sql);
     return $stmt->execute([':id' => $id]);
 }
+
+// Devuelve el número total de pokemons
+function countPokemons() {
+    global $nom_variable_connexio;
+    $sql = "SELECT COUNT(*) as total FROM pokemons";
+    $stmt = $nom_variable_connexio->query($sql);
+    $row = $stmt->fetch();
+    return $row ? (int)$row['total'] : 0;
+}
