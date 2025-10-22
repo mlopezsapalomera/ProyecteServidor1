@@ -1,5 +1,5 @@
 ## Desactivado temporalmente: el documento no existe y provoca 404 encadenado
-ErrorDocument 404 /segurity/404.html
+# ErrorDocument 404 /segurity/404.html
 
-# Sirve index.php y, si no existe, index.html para evitar listado de directorios
-DirectoryIndex view/index.php 
+# Deshabilitado DirectoryIndex para mantener URLs consistentes con /view/ visible
+# DirectoryIndex view/index.php 

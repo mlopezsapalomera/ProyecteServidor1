@@ -13,10 +13,11 @@ if (!$pokemon) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
+	<base href="/pt02_lopez_marcos/">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Entrenar Pokémon - PokéNet Social</title>
-	<link rel="stylesheet" href="../style/styles.css">
+	<link rel="stylesheet" href="style/styles.css">
 	</head>
 <body>
 	<div class="container form">
@@ -30,23 +31,23 @@ if (!$pokemon) {
 				<div class="alert error">❌ <?= e($error) ?></div>
 			<?php endif; ?>
 
-			<form action="/ProyecteServidor1/controller/modificar.controller.php" method="post">
-				<input type="hidden" name="id" value="<?= e($pokemon['id']) ?>">
-				
-				<div class="form-group">
-					<label for="titulo">🎯 Nombre del Pokémon *</label>
-					<input type="text" id="titulo" name="titulo" value="<?= e($pokemon['titulo']) ?>" placeholder="Ej: Pikachu, Charizard, Mewtwo..." required>
-				</div>
+		<form action="controller/modificar.controller.php" method="post">
+			<input type="hidden" name="id" value="<?= e($pokemon['id']) ?>">
+			
+			<div class="form-group">
+				<label for="titulo">🎯 Nombre del Pokémon *</label>
+				<input type="text" id="titulo" name="titulo" value="<?= e($pokemon['titulo']) ?>" placeholder="Ej: Pikachu, Charizard, Mewtwo..." required>
+			</div>
 
-				<div class="form-group">
-					<label for="descripcion">� Historia o Descripción</label>
-					<textarea id="descripcion" name="descripcion" placeholder="Cuéntanos más sobre tu Pokémon, nuevas habilidades aprendidas..."><?= e($pokemon['descripcion']) ?></textarea>
-				</div>
+			<div class="form-group">
+				<label for="descripcion">📝 Historia o Descripción</label>
+				<textarea id="descripcion" name="descripcion" placeholder="Cuéntanos más sobre tu Pokémon, nuevas habilidades aprendidas..."><?= e($pokemon['descripcion']) ?></textarea>
+			</div>
 
-				<div class="actions form">
-					<button class="btn primary" type="submit">💪 Guardar Entrenamiento</button>
-					<a class="btn secondary" href="/ProyecteServidor1/view/index.php">🔙 Volver a PokéNet</a>
-				</div>
+			<div class="actions form">
+				<button class="btn primary" type="submit">💪 Guardar Entrenamiento</button>
+				<a class="btn secondary" href="view/index.php">🔙 Volver a PokéNet</a>
+			</div>
 			</form>
 		</div>
 	</div>

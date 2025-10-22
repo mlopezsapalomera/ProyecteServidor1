@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../model/pokemon.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /ProyecteServidor1/view/index.php');
+    header('Location: ../view/index.php');
     exit;
 }
 
@@ -12,16 +12,15 @@ $titulo = isset($_POST['titulo']) ? trim($_POST['titulo']) : '';
 $descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : null;
 
 if ($id <= 0 || $titulo === '') {
-    header('Location: /ProyecteServidor1/view/modificar.vista.php?id=' . $id . '&error=' . urlencode('Datos inválidos.'));
+    header('Location: ../view/modificar.vista.php?id=' . $id . '&error=' . urlencode('Datos inválidos.'));
     exit;
 }
 
 $ok = updatePokemon($id, $titulo, $descripcion);
 
 if ($ok) {
-    header('Location: /ProyecteServidor1/view/index.php?ok=' . urlencode('Pokemon modificado correctamente'));
+    header('Location: ../view/index.php?ok=' . urlencode('Pokemon modificado correctamente'));
     exit;
 }
-
-header('Location: /ProyecteServidor1/view/modificar.vista.php?id=' . $id . '&error=' . urlencode('No se pudo modificar. Inténtalo de nuevo.'));
+header('Location: ../view/modificar.vista.php?id=' . $id . '&error=' . urlencode('No se pudo modificar. Inténtalo de nuevo.'));
 exit;
