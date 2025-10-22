@@ -16,78 +16,82 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéNet Social - Red Social Pokémon</title>
     <link rel="stylesheet" href="style/styles.css">
-    </head>
+</head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>PokéNet Social</h1>
-            <p class="subtitle">Descubre y comparte tus Pokémon favoritos</p>
-        </div>
-        
-        <div class="content">
-            <div class="actions">
-                <a class="button primary" href="view/insertar.vista.php">
-                    ⚡ Compartir tu Pokémon
-                </a>
+    <!-- Navbar tipo Instagram -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">🌟 PokéNet</div>
+            <div class="navbar-actions">
+                <a href="#" class="nav-btn login">Iniciar Sesión</a>
+                <a href="#" class="nav-btn register">Registrarse</a>
             </div>
-
-            <?php if ($ok): ?>
-                <div class="alert success">✅ <?= e($ok) ?></div>
-            <?php endif; ?>
-            <?php if ($error): ?>
-                <div class="alert error">❌ <?= e($error) ?></div>
-            <?php endif; ?>
-
-            <?php if ($result === false): ?>
-                <div class="empty">
-                    <h3>⚠️ Error de conexión</h3>
-                    <p>No se pudo obtener la lista. Revisa la conexión y que exista la tabla <strong>pokemons</strong>.</p>
-                </div>
-            <?php else: ?>
-                <?php if (count($result) === 0): ?>
-                    <div class="empty">
-                        <h3>🔍 ¡La aventura comienza aquí!</h3>
-                        <p>Sé el primero en compartir tu Pokémon en PokéNet Social. ¡Empieza tu colección ahora!</p>
-                    </div>
-                <?php else: ?>
-                    <div class="table-container">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>🆔 ID</th>
-                                    <th>🎯 Nombre del Pokémon</th>
-                                    <th>📝 Historia/Descripción</th>
-                                    <th>⚡ Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <?php foreach ($result as $row): ?>
-                                <tr>
-                                    <td class="id-column">#<?= e($row['id']) ?></td>
-                                    <td class="title-column"><?= e($row['titulo']) ?></td>
-                                    <td class="description-column"><?= e($row['descripcion']) ?></td>
-                                    <td class="actions-column">
-                                        <a class="button secondary" href="view/modificar.vista.php?id=<?= e($row['id']) ?>">
-                                            🔧 Editar
-                                        </a>
-                                        <a class="button secondary" href="controller/eliminar.controller.php?id=<?= e($row['id']) ?>" onclick="return confirm('¿Seguro que quieres liberar este Pokémon? Esta acción no se puede deshacer.');">
-                                            💫 Liberar
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php endif; ?>
-            <?php endif; ?>
         </div>
+    </nav>
+
+    <!-- Contenedor principal -->
+    <div class="container">
+        <?php if ($ok): ?>
+            <div class="alert success">✅ <?= e($ok) ?></div>
+        <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="alert error">❌ <?= e($error) ?></div>
+        <?php endif; ?>
+
+        <?php if ($result === false): ?>
+            <div class="empty">
+                <h3>⚠️ Error de conexión</h3>
+                <p>No se pudo obtener la lista. Revisa la conexión y que exista la tabla <strong>pokemons</strong>.</p>
+            </div>
+        <?php elseif (count($result) === 0): ?>
+            <div class="empty">
+                <h3>🔍 ¡La aventura comienza aquí!</h3>
+                <p>Sé el primero en compartir tu Pokémon en PokéNet Social. ¡Empieza tu colección ahora!</p>
+            </div>
+        <?php else: ?>
+            <!-- Posts tipo Instagram -->
+            <?php foreach ($result as $row): ?>
+                <div class="post-card">
+                    <div class="post-avatar"><?= e(strtoupper(substr($row['titulo'], 0, 1))) ?></div>
+                    <div class="post-main">
+                        <div class="post-header">
+                            <span class="post-username"><?= e($row['titulo']) ?></span>
+                            <span class="post-id">#<?= e($row['id']) ?></span>
+                        </div>
+                        <div class="post-title">🐾 <?= e($row['titulo']) ?></div>
+                        <?php if ($row['descripcion']): ?>
+                            <div class="post-description">📝 <?= e($row['descripcion']) ?></div>
+                        <?php endif; ?>
+                        <div class="post-actions post-actions-right">
+                            <a class="post-btn edit" href="view/modificar.vista.php?id=<?= e($row['id']) ?>" title="Editar">
+                                &#x270F;&#xFE0F;
+                            </a>
+                            <a class="post-btn delete" href="controller/eliminar.controller.php?id=<?= e($row['id']) ?>"
+                               onclick="return confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.');" title="Eliminar">
+                                &#x1F5D1;&#xFE0F;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
+
+    <!-- Footer fijo con botón insertar -->
+    <footer class="footer-insertar">
+        <a href="view/insertar.vista.php" class="footer-insertar-btn">
+            <span class="footer-insertar-icon">⚡</span>
+            <span class="footer-insertar-text">¿Qué Pokémon has capturado hoy?</span>
+        </a>
+    </footer>
+
+    <script>
+    // Limpia ?ok y ?error de la URL tras mostrar el mensaje
+    if (window.location.search.match(/[?&](ok|error)=/)) {
+        setTimeout(() => {
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }, 100);
+    }
+    </script>
 </body>
 </html>
-<script>
-// Limpia ?ok y ?error de la URL tras mostrar el mensaje
-if (window.location.search.match(/[?&](ok|error)=/)) {
-    window.history.replaceState({}, document.title, window.location.pathname);
-}
-</script>

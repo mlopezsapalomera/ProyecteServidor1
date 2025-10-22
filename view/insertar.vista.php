@@ -11,23 +11,37 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Capturar Pokémon - PokéNet Social</title>
   <link rel="stylesheet" href="style/styles.css">
-  </head>
+</head>
 <body>
+  <!-- Navbar tipo Instagram -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="view/index.php" class="navbar-brand" style="text-decoration: none;">🌟 PokéNet</a>
+      <div class="navbar-actions">
+        <a href="#" class="nav-btn login">Iniciar Sesión</a>
+        <a href="#" class="nav-btn register">Registrarse</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Contenedor principal -->
   <div class="container form">
+    <!-- Header con glassmorphism -->
     <div class="header form">
       <h1 class="form">⚡ Capturar Pokémon</h1>
-      <p class="subtitle">Añade un nuevo Pokémon a tu equipo</p>
+      <p class="subtitle">Añade un nuevo Pokémon a tu colección</p>
     </div>
-    
-    <div class="content form">
-      <?php if ($error): ?>
-        <div class="alert error">❌ <?= e($error) ?></div>
-      <?php endif; ?>
 
-  <form action="controller/insertar.controller.php" method="post">
+    <?php if ($error): ?>
+      <div class="alert error">❌ <?= e($error) ?></div>
+    <?php endif; ?>
+
+    <!-- Formulario con glassmorphism -->
+    <div class="form-container">
+      <form action="controller/insertar.controller.php" method="post">
         <div class="form-group">
           <label for="titulo">🎯 Nombre del Pokémon *</label>
-          <input type="text" id="titulo" name="titulo" placeholder="Ej: Pikachu, Charizard, Mewtwo..." required>
+          <input type="text" id="titulo" name="titulo" placeholder="Ej: Pikachu, Charizard, Mewtwo..." required autofocus>
         </div>
 
         <div class="form-group">
@@ -36,8 +50,8 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         </div>
 
         <div class="actions form">
-            <button class="btn primary" type="submit">🏆 Capturar Pokémon</button>
-            <a class="btn secondary" href="view/index.php">🔙 Volver a PokéNet</a>
+          <button class="btn primary" type="submit">🏆 Capturar Pokémon</button>
+          <a class="btn secondary" href="view/index.php">🔙 Cancelar</a>
         </div>
       </form>
     </div>
