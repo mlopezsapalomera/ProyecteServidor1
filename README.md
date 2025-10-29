@@ -15,11 +15,11 @@ Sistema web CRUD (Create, Read, Update, Delete) para gestionar artículos usando
 
 ### 1. Diseño de la Base de Datos
 - **Diseño conceptual**: Tabla `pokemons` con campos `id`, `titulo` y `descripcion`
-- **Creación del esquema**: Archivo `Pt02_Marcos_Lopez.sql` con:
+- **Creación del esquema**: Archivo `Pt03_Marcos_Lopez.sql` con:
   ```sql
-  DROP DATABASE IF EXISTS pt02_marcos_lopez;
-  CREATE DATABASE IF NOT EXISTS pt02_marcos_lopez;
-  USE pt02_marcos_lopez;
+  DROP DATABASE IF EXISTS pt03_marcos_lopez;
+  CREATE DATABASE IF NOT EXISTS pt03_marcos_lopez;
+  USE pt03_marcos_lopez;
   ```
 - **Tabla normalizada**: ID autoincremental, título obligatorio, descripción opcional
 
@@ -38,14 +38,14 @@ ProyecteServidor1/
 │   ├── modificar.controller.php
 │   └── eliminar.controller.php
 ├── env.php          # Configuración
-└── Pt02_Marcos_Lopez.sql  # Esquema entregable
+└── Pt03_Marcos_Lopez.sql  # Esquema entregable
 ```
 
 ### 3. Conexión PDO con la Base de Datos
 **Archivo: `model/db.php`**
 ```php
 try {
-    $dsn = 'mysql:host=' . DB_HOST . ';dbname=pt02_marcos_lopez;charset=utf8mb4';
+    $dsn = 'mysql:host=' . DB_HOST . ';dbname=pt03_marcos_lopez;charset=utf8mb4';
     $nom_variable_connexio = new PDO($dsn, DB_USER, DB_PASS, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -151,7 +151,7 @@ function insertPokemon($titulo, $descripcion = null) {
 - phpMyAdmin para gestión de BD
 
 ### Configuración
-1. Importar `Pt02_Marcos_Lopez.sql` en phpMyAdmin
+1. Importar `Pt03_Marcos_Lopez.sql` en phpMyAdmin
 2. Iniciar Apache y MySQL en XAMPP
 3. Acceder a: `http://localhost/ProyecteServidor1/`
 

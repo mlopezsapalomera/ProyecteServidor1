@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS `pt02_marcos_lopez`;
-CREATE DATABASE `pt02_marcos_lopez` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `pt02_marcos_lopez`;
+DROP DATABASE IF EXISTS `pt03_marcos_lopez`;
+CREATE DATABASE `pt03_marcos_lopez` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `pt03_marcos_lopez`;
 
 -- Tabla principal: pokemons
 -- Campos: id (PK), titulo, descripcion
