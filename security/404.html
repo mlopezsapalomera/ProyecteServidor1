@@ -3,10 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="404.html">
+    <title>Página no encontrada · 404</title>
+    <!-- Importante: cuando esta página se sirve como ErrorDocument,
+         las rutas relativas se resuelven contra la URL original.
+         Usamos base para fijar el contexto y que el CSS cargue siempre. -->
+    <base href="/pt02_lopez_marcos/security/">
+    <link rel="stylesheet" href="404.css">
 </head>
 <body>
-    error
+    <div class="error-404">
+        <h1>404</h1>
+        <p>La página que buscas no existe o fue movida.</p>
+        <a href="/pt02_lopez_marcos/" class="btn-volver">Volver al inicio</a>
+    </div>
 </body>
 </html>
