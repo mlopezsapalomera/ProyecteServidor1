@@ -1,3 +1,50 @@
 body {
-    color: red;
+    background-image: url("/assets/img/fondo.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 80vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.glass-card {
+  /* Efecto glassmorphism */
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  
+  /* Bordes y sombras */
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  
+  /* Tamaño y espaciado */
+  padding: 60px 80px;
+  text-align: center;
+}
+
+.error-code {
+  /* Números 404 grandes y redondeados */
+  font-size: 180px;
+  font-weight: 900;
+  font-family: 'Arial Rounded MT Bold', 'Helvetica Rounded', sans-serif;
+  
+  /* Efecto de vidrio en el texto */
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.9) 100%, 
+    rgba(255, 255, 255, 0.9) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  
+  /* Sombra de texto */
+  filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
+  
+  margin: 0;
+  line-height: 1;
 }
