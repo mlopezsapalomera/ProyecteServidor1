@@ -106,19 +106,38 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             
             <!-- Paginación fija -->
             <div class="pagination pagination-fixed">
-                <?php if ($totalPages > 1): ?>
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <?php
-                            $params = $_GET;
-                            $params['page'] = $i;
-                            $params['perPage'] = $perPage;
-                            $url = 'index.php?' . http_build_query($params);
-                        ?>
-                        <a href="<?= e($url) ?>" class="<?= $i == $page ? 'active' : '' ?>">
-                            <?= $i ?>
-                        </a>
-                    <?php endfor; ?>
-                <?php endif; ?>
+                <?php
+                    // Enlaces Anterior / Siguiente con preservación de parámetros
+                    $baseParams = $_GET;
+                    $baseParams['perPage'] = $perPage;
+                    // Anterior
+                    $prevDisabled = ($page <= 1);
+                    $prevPage = max(1, $page - 1);
+                    $baseParams['page'] = $prevPage;
+                    $prevUrl = 'index.php?' . http_build_query($baseParams);
+                ?>
+                <a href="<?= e($prevUrl) ?>" class="<?= $prevDisabled ? 'disabled' : '' ?>">Anterior</a>
+
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <?php
+                        $params = $_GET;
+                        $params['page'] = $i;
+                        $params['perPage'] = $perPage;
+                        $url = 'index.php?' . http_build_query($params);
+                    ?>
+                    <a href="<?= e($url) ?>" class="<?= $i == $page ? 'active' : '' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+
+                <?php
+                    // Siguiente
+                    $nextDisabled = ($page >= $totalPages);
+                    $nextPage = min($totalPages, $page + 1);
+                    $baseParams['page'] = $nextPage;
+                    $nextUrl = 'index.php?' . http_build_query($baseParams);
+                ?>
+                <a href="<?= e($nextUrl) ?>" class="<?= $nextDisabled ? 'disabled' : '' ?>">Siguiente</a>
             </div>
         </div>
     </div>

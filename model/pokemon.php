@@ -3,8 +3,15 @@
 // CRUD básico para pokemons / elementos
 
 
+/** @var PDO $nom_variable_connexio Conexión PDO a la base de datos */
 $nom_variable_connexio = require __DIR__ . '/db.php';
 
+/**
+ * Obtiene una lista paginada de pokémons ordenados por id desc.
+ * @param int $limit  Número máximo de registros a devolver
+ * @param int $offset Desplazamiento inicial
+ * @return array<int, array<string,mixed>> Lista de pokémons
+ */
 function getAllPokemons($limit = 100, $offset = 0) {
     global $nom_variable_connexio;
     $sql = "SELECT * FROM pokemons ORDER BY id DESC LIMIT :limit OFFSET :offset";
@@ -15,6 +22,11 @@ function getAllPokemons($limit = 100, $offset = 0) {
     return $stmt->fetchAll();
 }
 
+/**
+ * Obtiene un pokemon por su identificador.
+ * @param int $id Identificador del pokemon
+ * @return array<string,mixed>|false Registro o false si no existe
+ */
 function getPokemonById($id) {
     global $nom_variable_connexio;
     $sql = "SELECT * FROM pokemons WHERE id = :id";
@@ -24,6 +36,12 @@ function getPokemonById($id) {
     return $stmt->fetch();
 }
 
+/**
+ * Inserta un nuevo pokemon.
+ * @param string $titulo Título del pokemon
+ * @param string|null $descripcion Descripción (opcional)
+ * @return bool Éxito de la operación
+ */
 function insertPokemon($titulo, $descripcion = null) {
     global $nom_variable_connexio;
     $sql = "INSERT INTO pokemons (titulo, descripcion) VALUES (:titulo, :descripcion)";
@@ -34,6 +52,13 @@ function insertPokemon($titulo, $descripcion = null) {
     ]);
 }
 
+/**
+ * Actualiza un pokemon existente.
+ * @param int $id ID del pokemon
+ * @param string $titulo Nuevo título
+ * @param string|null $descripcion Nueva descripción
+ * @return bool Éxito de la operación
+ */
 function updatePokemon($id, $titulo, $descripcion = null) {
     global $nom_variable_connexio;
     $sql = "UPDATE pokemons SET titulo = :titulo, descripcion = :descripcion WHERE id = :id";
@@ -45,6 +70,11 @@ function updatePokemon($id, $titulo, $descripcion = null) {
     ]);
 }
 
+/**
+ * Elimina un pokemon por ID.
+ * @param int $id ID del pokemon
+ * @return bool Éxito de la operación
+ */
 function deletePokemon($id) {
     global $nom_variable_connexio;
     $sql = "DELETE FROM pokemons WHERE id = :id";
@@ -52,7 +82,10 @@ function deletePokemon($id) {
     return $stmt->execute([':id' => $id]);
 }
 
-// Devuelve el número total de pokemons
+/**
+ * Devuelve el número total de pokémons.
+ * @return int Total de registros en la tabla pokemons
+ */
 function countPokemons() {
     global $nom_variable_connexio;
     $sql = "SELECT COUNT(*) as total FROM pokemons";
