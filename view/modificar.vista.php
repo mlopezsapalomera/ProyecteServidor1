@@ -13,7 +13,7 @@ if (!$pokemon) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-	<base href="/pt02_lopez_marcos/">
+	<base href="/ProyecteServidor1/">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Entrenar Pokémon - PokéNet Social</title>

@@ -10,7 +10,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <base href="/pt02_lopez_marcos/">
+    <base href="/ProyecteServidor1/">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéNet Social - Red Social Pokémon</title>
