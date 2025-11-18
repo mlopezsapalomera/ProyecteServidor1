@@ -14,7 +14,12 @@ $nom_variable_connexio = require __DIR__ . '/db.php';
  */
 function getAllPokemons($limit = 100, $offset = 0) {
     global $nom_variable_connexio;
-    $sql = "SELECT * FROM pokemons ORDER BY id DESC LIMIT :limit OFFSET :offset";
+    // Traer también el nombre del autor (si existe)
+    $sql = "SELECT p.*, u.username AS autor_username
+            FROM pokemons p
+            LEFT JOIN users u ON p.user_id = u.id
+            ORDER BY p.id DESC
+            LIMIT :limit OFFSET :offset";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
     $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
@@ -42,13 +47,14 @@ function getPokemonById($id) {
  * @param string|null $descripcion Descripción (opcional)
  * @return bool Éxito de la operación
  */
-function insertPokemon($titulo, $descripcion = null) {
+function insertPokemon($titulo, $descripcion = null, $user_id = null) {
     global $nom_variable_connexio;
-    $sql = "INSERT INTO pokemons (titulo, descripcion) VALUES (:titulo, :descripcion)";
+    $sql = "INSERT INTO pokemons (titulo, descripcion, user_id) VALUES (:titulo, :descripcion, :user_id)";
     $stmt = $nom_variable_connexio->prepare($sql);
     return $stmt->execute([
         ':titulo' => $titulo,
-        ':descripcion' => $descripcion
+        ':descripcion' => $descripcion,
+        ':user_id' => $user_id !== null ? (int)$user_id : null
     ]);
 }
 

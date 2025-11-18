@@ -1,5 +1,10 @@
 <?php
 // view/insertar.vista.php
+require_once __DIR__ . '/../security/auth.php';
+if (!estaIdentificat()) {
+  header('Location: /ProyecteServidor1/view/login.vista.php?error=' . urlencode('Cal iniciar sessió per accedir al formulari.'));
+  exit;
+}
 function e($s){return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');}
 $error = isset($_GET['error']) ? $_GET['error'] : null;
 ?>
@@ -18,8 +23,13 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <div class="navbar-container">
       <a href="view/index.php" class="navbar-brand" style="text-decoration: none;">🌟 PokéNet</a>
       <div class="navbar-actions">
-        <a href="#" class="nav-btn login">Iniciar Sesión</a>
-        <a href="#" class="nav-btn register">Registrarse</a>
+        <?php if(estaIdentificat()): ?>
+          <span class="nav-user"><?= e(usuariActual()['username']) ?></span>
+          <a class="nav-btn" href="controller/logout.controller.php">Tancar sessió</a>
+        <?php else: ?>
+          <a href="view/login.vista.php" class="nav-btn">Iniciar Sessió</a>
+          <a href="view/register.vista.php" class="nav-btn">Registrarse</a>
+        <?php endif; ?>
       </div>
     </div>
   </nav>

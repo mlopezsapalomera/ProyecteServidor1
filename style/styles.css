@@ -590,7 +590,8 @@ label {
     font-size: 0.95rem;
 }
 
-input[type=text], textarea {
+/* Estilos para todos los inputs de formulario: text, email, password y textarea */
+input, input[type=text], input[type=email], input[type=password], textarea {
     width: 100%;
     padding: 14px 16px;
     border: 2px solid rgba(255, 0, 110, 0.15);
@@ -602,11 +603,17 @@ input[type=text], textarea {
     color: #1a1a1a;
 }
 
-input[type=text]:focus, textarea:focus {
+input:focus, input[type=text]:focus, input[type=email]:focus, input[type=password]:focus, textarea:focus {
     outline: none;
     border-color: #ff006e;
-    box-shadow: 0 0 0 4px rgba(255, 0, 110, 0.1);
+    box-shadow: 0 0 0 4px rgba(255, 0, 110, 0.08);
     background: white;
+}
+
+/* Placeholder subtle styling */
+input::placeholder, textarea::placeholder {
+    color: #9a9a9a;
+    opacity: 1;
 }
 
 textarea {

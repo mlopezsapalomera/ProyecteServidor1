@@ -1,28 +1,34 @@
 <?php
 // controller/insertar.controller.php
 require_once __DIR__ . '/../model/pokemon.php';
+require_once __DIR__ . '/../security/auth.php';
 
-// Solo aceptar POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../view/insertar.vista.php');
     exit;
 }
 
-// Recoger y validar campos
-$titulo = isset($_POST['titulo']) ? trim($_POST['titulo']) : '';
-$descripcion = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : null;
-
-if ($titulo === '') {
-    header('Location: ../view/insertar.vista.php?error=' . urlencode('El título es obligatorio'));
+if (!estaIdentificat()) {
+    header('Location: ../view/login.vista.php?error=' . urlencode('Cal iniciar sessió per inserir.'));
     exit;
 }
 
-$ok = insertPokemon($titulo, $descripcion);
+// Recollir i validar camps
+$titol = isset($_POST['titulo']) ? trim($_POST['titulo']) : '';
+$descripcio = isset($_POST['descripcion']) ? trim($_POST['descripcion']) : null;
+
+if ($titol === '') {
+    header('Location: ../view/insertar.vista.php?error=' . urlencode('El títol és obligatori'));
+    exit;
+}
+
+$idUsuari = idUsuariActual();
+$ok = insertPokemon($titol, $descripcio, $idUsuari);
 
 if ($ok) {
-    header('Location: ../view/index.php?ok=' . urlencode('Pokemon insertado correctamente'));
+    header('Location: ../view/index.php?ok=' . urlencode('Pokémon inserit correctament'));
     exit;
 }
 
-header('Location: ../view/insertar.vista.php?error=' . urlencode('No se pudo insertar. Inténtalo de nuevo.'));
+header('Location: ../view/insertar.vista.php?error=' . urlencode('No s\'ha pogut inserir. Torna-ho a provar.'));
 exit;
