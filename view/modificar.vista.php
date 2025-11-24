@@ -10,9 +10,9 @@ if (!$pokemon) {
 	exit;
 }
 
-// Només permetre l'accés a la vista si l'usuari és el propietari
-if (!estaIdentificat() || (int)$pokemon['user_id'] !== idUsuariActual()) {
-	header('Location: /ProyecteServidor1/view/index.php?error=' . urlencode('No tens permís per editar aquest Pokémon.'));
+// Solo permitir acceso a la vista si el usuario es el propietario
+if (!estaIdentificado() || (int)$pokemon['user_id'] !== idUsuarioActual()) {
+	header('Location: /ProyecteServidor1/view/index.php?error=' . urlencode('No tienes permiso para editar este Pokémon.'));
 	exit;
 }
 ?>
@@ -31,11 +31,11 @@ if (!estaIdentificat() || (int)$pokemon['user_id'] !== idUsuariActual()) {
 		<div class="navbar-container">
 			<a href="view/index.php" class="navbar-brand" style="text-decoration: none;">🌟 PokéNet</a>
 			<div class="navbar-actions">
-					<?php if(estaIdentificat()): ?>
-						<span class="nav-user"><?= e(usuariActual()['username']) ?></span>
-						<a class="nav-btn" href="controller/logout.controller.php">Tancar sessió</a>
+					<?php if(estaIdentificado()): ?>
+						<span class="nav-user"><?= e(usuarioActual()['username']) ?></span>
+						<a class="nav-btn" href="controller/logout.controller.php">Cerrar sesión</a>
 					<?php else: ?>
-						<a href="view/login.vista.php" class="nav-btn">Iniciar Sessió</a>
+						<a href="view/login.vista.php" class="nav-btn">Iniciar sesión</a>
 						<a href="view/register.vista.php" class="nav-btn">Registrarse</a>
 					<?php endif; ?>
 			</div>

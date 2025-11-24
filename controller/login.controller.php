@@ -11,16 +11,16 @@ $campUsuari = isset($_POST['user']) ? trim($_POST['user']) : '';
 $contrasenya = isset($_POST['password']) ? $_POST['password'] : '';
 
 if ($campUsuari === '' || $contrasenya === '') {
-    header('Location: ../view/login.vista.php?error=' . urlencode('Usuari i contrasenya són obligatoris.'));
+    header('Location: ../view/login.vista.php?error=' . urlencode('Usuario y contraseña son obligatorios.'));
     exit;
 }
 
-$usuari = verificarCredencialsUsuari($campUsuari, $contrasenya);
+$usuari = verificarCredencialesUsuario($campUsuari, $contrasenya);
 if ($usuari) {
-    iniciarSessio($usuari);
-    header('Location: ../view/index.php?ok=' . urlencode('Has iniciat sessió.'));
+    iniciarSesion($usuari);
+    header('Location: ../view/index.php?ok=' . urlencode('Has iniciado sesión.'));
     exit;
 }
 
-header('Location: ../view/login.vista.php?error=' . urlencode('Usuari o contrasenya incorrectes.') . '&usuari=' . urlencode($campUsuari));
+header('Location: ../view/login.vista.php?error=' . urlencode('Usuario o contraseña incorrectos.') . '&usuari=' . urlencode($campUsuari));
 exit;

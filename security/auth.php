@@ -1,12 +1,11 @@
 <?php
-// Temps d'inactivitat en segons (40 minuts)
-define('AUTH_TEMPS_INACTIVITAT', 2400);
+// Tiempo de inactividad en segundos (40 minutos)
+define('AUTH_TIEMPO_INACTIVIDAD', 2400);
 
 // Ajustar parámetros de cookie de sesión antes de iniciar sesión
 if (session_status() === PHP_SESSION_NONE) {
-    // Lifetime en segundos, (httponly y samesite para mayor seguridad recomendado por chatgpt)
     session_set_cookie_params([
-        'lifetime' => AUTH_TEMPS_INACTIVITAT,
+        'lifetime' => AUTH_TIEMPO_INACTIVIDAD,
         'path' => '/',
         'domain' => '',
         'secure' => false, // si usas HTTPS, poner true
@@ -16,9 +15,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-function mantenirSessio() {
+function mantenerSesion() {
     if (!isset($_SESSION['last_activity'])) return;
-    if (time() - $_SESSION['last_activity'] > AUTH_TEMPS_INACTIVITAT) {
+    if (time() - $_SESSION['last_activity'] > AUTH_TIEMPO_INACTIVIDAD) {
         // Expirada
         session_unset();
         session_destroy();
@@ -27,31 +26,31 @@ function mantenirSessio() {
     $_SESSION['last_activity'] = time();
 }
 
-// Cridar per mantenir sessió o expirar
-mantenirSessio();
+// Llamar para mantener sesión o expirar
+mantenerSesion();
 
-function iniciarSessio(array $usuari) {
-    // $usuari ha de contenir com a mínim id i username
-    $_SESSION['usuari'] = [
-        'id' => $usuari['id'],
-        'username' => $usuari['username']
+function iniciarSesion(array $usuario) {
+    // $usuario debe contener al menos id y username
+    $_SESSION['usuario'] = [
+        'id' => $usuario['id'],
+        'username' => $usuario['username']
     ];
     $_SESSION['last_activity'] = time();
 }
 
-function tancarSessio() {
+function cerrarSesion() {
     session_unset();
     session_destroy();
 }
 
-function estaIdentificat() {
-    return isset($_SESSION['usuari']) && isset($_SESSION['usuari']['id']);
+function estaIdentificado() {
+    return isset($_SESSION['usuario']) && isset($_SESSION['usuario']['id']);
 }
 
-function usuariActual() {
-    return estaIdentificat() ? $_SESSION['usuari'] : null;
+function usuarioActual() {
+    return estaIdentificado() ? $_SESSION['usuario'] : null;
 }
 
-function idUsuariActual() {
-    return estaIdentificat() ? (int)$_SESSION['usuari']['id'] : null;
+function idUsuarioActual() {
+    return estaIdentificado() ? (int)$_SESSION['usuario']['id'] : null;
 }

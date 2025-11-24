@@ -8,8 +8,8 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     exit;
 }
 
-if (!estaIdentificat()) {
-    header('Location: ../view/login.vista.php?error=' . urlencode('Cal iniciar sessió per eliminar.'));
+if (!estaIdentificado()) {
+    header('Location: ../view/login.vista.php?error=' . urlencode('Debes iniciar sesión para eliminar.'));
     exit;
 }
 
@@ -20,17 +20,17 @@ if (!$pokemon) {
     exit;
 }
 
-if ((int)$pokemon['user_id'] !== idUsuariActual()) {
-    header('Location: ../view/index.php?error=' . urlencode('No tens permís per eliminar aquest Pokémon.'));
+if ((int)$pokemon['user_id'] !== idUsuarioActual()) {
+    header('Location: ../view/index.php?error=' . urlencode('No tienes permiso para eliminar este Pokémon.'));
     exit;
 }
 
 $ok = deletePokemon($id);
 
 if ($ok) {
-    header('Location: ../view/index.php?ok=' . urlencode('Pokémon eliminat correctament'));
+    header('Location: ../view/index.php?ok=' . urlencode('Pokémon eliminado correctamente'));
     exit;
 }
 
-header('Location: ../view/index.php?error=' . urlencode('No s\'ha pogut eliminar.'));
+header('Location: ../view/index.php?error=' . urlencode('No se ha podido eliminar.'));
 exit;

@@ -12,7 +12,7 @@ $nom_variable_connexio = require __DIR__ . '/db.php';
  * @param int $offset Desplazamiento inicial
  * @return array<int, array<string,mixed>> Lista de pokémons
  */
-function getAllPokemons($limit = 100, $offset = 0) {
+function obtenerPokemons($limit = 100, $offset = 0) {
     global $nom_variable_connexio;
     // Traer también el nombre del autor (si existe)
     $sql = "SELECT p.*, u.username AS autor_username
@@ -32,7 +32,7 @@ function getAllPokemons($limit = 100, $offset = 0) {
  * @param int $id Identificador del pokemon
  * @return array<string,mixed>|false Registro o false si no existe
  */
-function getPokemonById($id) {
+function obtenerPokemonPorId($id) {
     global $nom_variable_connexio;
     $sql = "SELECT * FROM pokemons WHERE id = :id";
     $stmt = $nom_variable_connexio->prepare($sql);
@@ -47,7 +47,7 @@ function getPokemonById($id) {
  * @param string|null $descripcion Descripción (opcional)
  * @return bool Éxito de la operación
  */
-function insertPokemon($titulo, $descripcion = null, $user_id = null) {
+function insertarPokemon($titulo, $descripcion = null, $user_id = null) {
     global $nom_variable_connexio;
     $sql = "INSERT INTO pokemons (titulo, descripcion, user_id) VALUES (:titulo, :descripcion, :user_id)";
     $stmt = $nom_variable_connexio->prepare($sql);
@@ -65,7 +65,7 @@ function insertPokemon($titulo, $descripcion = null, $user_id = null) {
  * @param string|null $descripcion Nueva descripción
  * @return bool Éxito de la operación
  */
-function updatePokemon($id, $titulo, $descripcion = null) {
+function actualizarPokemon($id, $titulo, $descripcion = null) {
     global $nom_variable_connexio;
     $sql = "UPDATE pokemons SET titulo = :titulo, descripcion = :descripcion WHERE id = :id";
     $stmt = $nom_variable_connexio->prepare($sql);
@@ -81,7 +81,7 @@ function updatePokemon($id, $titulo, $descripcion = null) {
  * @param int $id ID del pokemon
  * @return bool Éxito de la operación
  */
-function deletePokemon($id) {
+function eliminarPokemon($id) {
     global $nom_variable_connexio;
     $sql = "DELETE FROM pokemons WHERE id = :id";
     $stmt = $nom_variable_connexio->prepare($sql);
@@ -92,7 +92,7 @@ function deletePokemon($id) {
  * Devuelve el número total de pokémons.
  * @return int Total de registros en la tabla pokemons
  */
-function countPokemons() {
+function contarPokemons() {
     global $nom_variable_connexio;
     $sql = "SELECT COUNT(*) as total FROM pokemons";
     $stmt = $nom_variable_connexio->query($sql);

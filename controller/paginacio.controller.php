@@ -9,10 +9,10 @@ if ($perPage < 1) $perPage = 5;
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) $page = 1;
 
-$totalPokemons = countPokemons();
+$totalPokemons = contarPokemons();
 $totalPages = max(1, ceil($totalPokemons / $perPage));
 if ($page > $totalPages) $page = $totalPages;
 
 $offset = ($page - 1) * $perPage;
-$pokemons = getAllPokemons($perPage, $offset);
+$pokemons = obtenerPokemons($perPage, $offset);
 ?>

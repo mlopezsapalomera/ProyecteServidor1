@@ -23,11 +23,11 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         <div class="navbar-container">
             <div class="navbar-brand">🌟 PokéNet</div>
             <div class="navbar-actions">
-                <?php if (estaIdentificat()): ?>
-                    <span class="nav-user"><?= e(usuariActual()['username']) ?></span>
-                    <a href="controller/logout.controller.php" class="nav-btn">Tancar sessió</a>
+                <?php if (estaIdentificado()): ?>
+                    <span class="nav-user"><?= e(usuarioActual()['username']) ?></span>
+                    <a href="controller/logout.controller.php" class="nav-btn">Cerrar sesión</a>
                 <?php else: ?>
-                    <a href="view/login.vista.php" class="nav-btn login">Iniciar Sessió</a>
+                    <a href="view/login.vista.php" class="nav-btn login">Iniciar sesión</a>
                     <a href="view/register.vista.php" class="nav-btn register">Registrarse</a>
                 <?php endif; ?>
             </div>
@@ -38,13 +38,13 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         <!-- Panel lateral izquierdo -->
         <div class="sidebar-left">
             <!-- Botón insertar (solo para usuarios autenticados) -->
-            <?php if (estaIdentificat()): ?>
+            <?php if (estaIdentificado()): ?>
                 <a href="view/insertar.vista.php" class="btn-capturar">
                     <span class="icon">⚡</span>
                     <span>Capturar Pokémon</span>
                 </a>
             <?php else: ?>
-                <a href="view/login.vista.php" class="btn-capturar" title="Inicia sessió per capturar">
+                <a href="view/login.vista.php" class="btn-capturar" title="Inicia sesión para capturar">
                     <span class="icon">⚡</span>
                     <span>Capturar Pokémon</span>
                 </a>
@@ -99,14 +99,14 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             <span class="post-id">#<?= e($row['id']) ?></span>
                         </div>
                         <div class="post-meta">
-                            <small class="post-author">Publicat per: <?= e($row['autor_username'] ?? 'Anònim') ?></small>
+                            <small class="post-author">Publicado por: <?= e($row['autor_username'] ?? 'Anónimo') ?></small>
                         </div>
                         <div class="post-title">🐾 <?= e($row['titulo']) ?></div>
                         <?php if ($row['descripcion']): ?>
                             <div class="post-description">📝 <?= e($row['descripcion']) ?></div>
                         <?php endif; ?>
                         <div class="post-actions post-actions-right">
-                            <?php if (estaIdentificat() && isset($row['user_id']) && (int)$row['user_id'] === idUsuariActual()): ?>
+                            <?php if (estaIdentificado() && isset($row['user_id']) && (int)$row['user_id'] === idUsuarioActual()): ?>
                                 <a class="post-btn edit" href="view/modificar.vista.php?id=<?= e($row['id']) ?>" title="Editar">
                                     &#x270F;&#xFE0F;
                                 </a>

@@ -18,9 +18,9 @@ $usuariPrefill = isset($_GET['usuari']) ? $_GET['usuari'] : '';
     <div class="navbar-container">
       <a href="view/index.php" class="navbar-brand">🌟 PokéNet</a>
       <div class="navbar-actions">
-        <?php if(estaIdentificat()): ?>
-          <span class="nav-user"><?= e(usuariActual()['username']) ?></span>
-          <a class="nav-btn" href="controller/logout.controller.php">Tancar sessió</a>
+        <?php if(estaIdentificado()): ?>
+          <span class="nav-user"><?= e(usuarioActual()['username']) ?></span>
+          <a class="nav-btn" href="controller/logout.controller.php">Cerrar sesión</a>
         <?php else: ?>
           <a href="view/register.vista.php" class="nav-btn">Registrarse</a>
         <?php endif; ?>
