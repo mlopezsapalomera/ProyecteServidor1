@@ -1,12 +1,7 @@
 <?php
-/**
- * Controlador de paginación para la lista de pokémons.
- * Lee parámetros GET (?page, ?perPage), calcula límites y
- * expone variables a la vista: $pokemons, $page, $perPage, $totalPages, $totalPokemons.
- */
 require_once __DIR__ . '/../model/pokemon.php';
 
-// Número de pokemons por página (por defecto 5, pero puede venir por GET)
+// Número de pokemons por página (por defecto 5)
 $perPage = isset($_GET['perPage']) && is_numeric($_GET['perPage']) ? (int)$_GET['perPage'] : 5;
 if ($perPage < 1) $perPage = 5;
 

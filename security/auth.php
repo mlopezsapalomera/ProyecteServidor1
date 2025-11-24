@@ -1,11 +1,10 @@
 <?php
-// security/auth.php
 // Temps d'inactivitat en segons (40 minuts)
 define('AUTH_TEMPS_INACTIVITAT', 2400);
 
 // Ajustar parámetros de cookie de sesión antes de iniciar sesión
 if (session_status() === PHP_SESSION_NONE) {
-    // Lifetime en segundos, httponly y samesite para mayor seguridad
+    // Lifetime en segundos, (httponly y samesite para mayor seguridad recomendado por chatgpt)
     session_set_cookie_params([
         'lifetime' => AUTH_TEMPS_INACTIVITAT,
         'path' => '/',
