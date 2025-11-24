@@ -4,7 +4,7 @@ require_once __DIR__ . '/../security/auth.php';
 function e($s){return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');}
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $error = isset($_GET['error']) ? $_GET['error'] : null;
-$pokemon = $id > 0 ? getPokemonById($id) : null;
+$pokemon = $id > 0 ? obtenerPokemonPorId($id) : null;
 if (!$pokemon) {
 	echo '<div style="padding:24px;color:#991b1b">No s\'ha trobat el Pokémon.</div>';
 	exit;

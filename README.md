@@ -57,23 +57,23 @@ try {
 
 ### 4. Mostrar Artículos (READ)
 - **Vista**: `view/index.php` con tabla HTML
-- **Función**: `getAllPokemons()` usando prepared statements
+- **Función**: `obtenerPokemons()` usando prepared statements
 - **Técnicas**: `foreach` para iterar, `htmlspecialchars()` para seguridad
 
 ### 5. Insertar Artículos (CREATE)
 - **Vista**: Formulario en `insertar.vista.php`
 - **Controlador**: `insertar.controller.php` valida y procesa POST
-- **Función**: `insertPokemon()` con prepared statement
+- **Función**: `insertarPokemon()` con prepared statement
 
 ### 6. Eliminar Artículos (DELETE)
 - **Confirmación**: JavaScript `confirm()` antes de eliminar
 - **Controlador**: `eliminar.controller.php` procesa GET con ID
-- **Función**: `deletePokemon()` con prepared statement
+- **Función**: `eliminarPokemon()` con prepared statement
 
 ### 7. Modificar Artículos (UPDATE)
 - **Vista**: Formulario precargado en `modificar.vista.php`
 - **Controlador**: `modificar.controller.php` valida y actualiza
-- **Función**: `updatePokemon()` con prepared statement
+- **Función**: `actualizarPokemon()` con prepared statement
 
 ## Tecnologías y Métodos Utilizados
 
@@ -90,7 +90,7 @@ try {
 
 **Ejemplo de uso**:
 ```php
-function insertPokemon($titulo, $descripcion = null) {
+function insertarPokemon($titulo, $descripcion = null) {
     global $nom_variable_connexio;
     $sql = "INSERT INTO pokemons (titulo, descripcion) VALUES (:titulo, :descripcion)";
     $stmt = $nom_variable_connexio->prepare($sql);
@@ -127,14 +127,14 @@ function insertPokemon($titulo, $descripcion = null) {
 
 ### Flujo de una Consulta (READ)
 1. `view/index.php` incluye `model/pokemon.php`
-2. Llama a `getAllPokemons()` que usa la conexión global `$nom_variable_connexio`
+2. Llama a `obtenerPokemons()` que usa la conexión global `$nom_variable_connexio`
 3. Ejecuta prepared statement con `LIMIT` y `OFFSET`
 4. Retorna array de registros que se muestran en tabla HTML
 
 ### Flujo de Inserción (CREATE)
 1. Usuario completa formulario en `insertar.vista.php`
 2. Form envía POST a `insertar.controller.php`
-3. Controlador valida datos y llama `insertPokemon()`
+3. Controlador valida datos y llama `insertarPokemon()`
 4. Función ejecuta prepared statement con parámetros seguros
 5. Redirección con mensaje de éxito/error
 

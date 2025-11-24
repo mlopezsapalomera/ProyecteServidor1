@@ -8,8 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (!estaIdentificat()) {
-    header('Location: ../view/login.vista.php?error=' . urlencode('Cal iniciar sessió per inserir.'));
+if (!estaIdentificado()) {
+    header('Location: ../view/login.vista.php?error=' . urlencode('Debes iniciar sesión para insertar.'));
     exit;
 }
 
@@ -22,13 +22,12 @@ if ($titol === '') {
     exit;
 }
 
-$idUsuari = idUsuariActual();
-$ok = insertPokemon($titol, $descripcio, $idUsuari);
+$idUsuario = idUsuarioActual();
+$ok = insertarPokemon($titol, $descripcio, $idUsuario);
 
 if ($ok) {
-    header('Location: ../view/index.php?ok=' . urlencode('Pokémon inserit correctament'));
+    header('Location: ../view/index.php?ok=' . urlencode('Pokémon insertado correctamente'));
     exit;
 }
-
-header('Location: ../view/insertar.vista.php?error=' . urlencode('No s\'ha pogut inserir. Torna-ho a provar.'));
+header('Location: ../view/insertar.vista.php?error=' . urlencode('No se ha podido insertar. Inténtalo de nuevo.'));
 exit;

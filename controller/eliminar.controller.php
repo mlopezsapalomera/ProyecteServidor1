@@ -14,7 +14,7 @@ if (!estaIdentificado()) {
 }
 
 $id = (int)$_GET['id'];
-$pokemon = getPokemonById($id);
+$pokemon = obtenerPokemonPorId($id);
 if (!$pokemon) {
     header('Location: ../view/index.php?error=' . urlencode('Registre no trobat.'));
     exit;
@@ -25,7 +25,7 @@ if ((int)$pokemon['user_id'] !== idUsuarioActual()) {
     exit;
 }
 
-$ok = deletePokemon($id);
+$ok = eliminarPokemon($id);
 
 if ($ok) {
     header('Location: ../view/index.php?ok=' . urlencode('Pokémon eliminado correctamente'));

@@ -8,8 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (!estaIdentificat()) {
-    header('Location: ../view/login.vista.php?error=' . urlencode('Cal iniciar sessió per editar.'));
+if (!estaIdentificado()) {
+    header('Location: ../view/login.vista.php?error=' . urlencode('Debes iniciar sesión para editar.'));
     exit;
 }
 
@@ -22,23 +22,23 @@ if ($id <= 0 || $titol === '') {
     exit;
 }
 
-$pokemon = getPokemonById($id);
+$pokemon = obtenerPokemonPorId($id);
 if (!$pokemon) {
     header('Location: ../view/index.php?error=' . urlencode('Registre no trobat.'));
     exit;
 }
 
-// Només el propietari pot editar
-if ((int)$pokemon['user_id'] !== idUsuariActual()) {
-    header('Location: ../view/index.php?error=' . urlencode('No tens permís per editar aquest Pokémon.'));
+// Sólo el propietario puede editar
+if ((int)$pokemon['user_id'] !== idUsuarioActual()) {
+    header('Location: ../view/index.php?error=' . urlencode('No tienes permiso para editar este Pokémon.'));
     exit;
 }
 
-$ok = updatePokemon($id, $titol, $descripcio);
+$ok = actualizarPokemon($id, $titol, $descripcio);
 
 if ($ok) {
     header('Location: ../view/index.php?ok=' . urlencode('Pokémon modificat correctament'));
     exit;
 }
-header('Location: ../view/modificar.vista.php?id=' . $id . '&error=' . urlencode('No s\'ha pogut modificar. Torna-ho a provar.'));
+header('Location: ../view/modificar.vista.php?id=' . $id . '&error=' . urlencode('No se ha podido modificar. Inténtalo de nuevo.'));
 exit;
