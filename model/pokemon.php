@@ -71,3 +71,18 @@ function contarPokemons() {
     $row = $stmt->fetch();
     return $row ? (int)$row['total'] : 0;
 }
+
+/*
+function ordenarPokemons($order = 'Desc') {
+    global $nom_variable_connexio;
+
+    // Sanitizamos la entrada
+    $order = ($order === 'Asc') ? 'ASC' : 'DESC';
+
+    $sql = "SELECT * FROM pokemons ORDER BY id $order"; // o el campo que quieras
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+*/
