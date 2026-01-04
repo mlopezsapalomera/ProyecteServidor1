@@ -15,7 +15,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéNet Social - Red Social Pokémon</title>
-    <link rel="stylesheet" href="style/styles.css">
+    <link rel="stylesheet" href="style/styles.css?v=<?= time() ?>">
 </head>
 <body class="no-page-scroll">
     <!-- Navbar tipo Instagram -->
@@ -24,7 +24,9 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             <div class="navbar-brand">🌟 PokéNet</div>
             <div class="navbar-actions">
                 <?php if (estaIdentificado()): ?>
-                    <span class="nav-user"><?= e(usuarioActual()['username']) ?></span>
+                    <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
+                        <?= e(usuarioActual()['username']) ?>
+                    </a>
                     <a href="controller/logout.controller.php" class="nav-btn">Cerrar sesión</a>
                 <?php else: ?>
                     <a href="view/login.vista.php" class="nav-btn login">Iniciar sesión</a>
@@ -67,6 +69,30 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                 } ?>
                 <input type="hidden" name="page" value="1">
             </form>
+            
+            <!-- Selector de ordenación -->
+            <form method="get" action="index.php" class="per-page-selector">
+                <label for="orderBy">Ordenar por:</label>
+                <select name="orderBy" id="orderBy" onchange="this.form.submit()">
+                    <option value="id" <?= $orderBy=='id'?'selected':'' ?>>ID</option>
+                    <option value="titulo" <?= $orderBy=='titulo'?'selected':'' ?>>Título</option>
+                    <option value="created_at" <?= $orderBy=='created_at'?'selected':'' ?>>Fecha</option>
+                </select>
+                
+                <label for="orderDir">Dirección:</label>
+                <select name="orderDir" id="orderDir" onchange="this.form.submit()">
+                    <option value="ASC" <?= $orderDir=='ASC'?'selected':'' ?>>↑ Ascendente</option>
+                    <option value="DESC" <?= $orderDir=='DESC'?'selected':'' ?>>↓ Descendente</option>
+                </select>
+                
+                <!-- Mantener otros parámetros -->
+                <?php foreach($_GET as $k=>$v) {
+                    if($k !== 'orderBy' && $k !== 'orderDir' && $k !== 'page') { ?>
+                        <input type="hidden" name="<?= e($k) ?>" value="<?= e($v) ?>">
+                <?php }
+                } ?>
+                <input type="hidden" name="page" value="1">
+            </form>
         </div>
         
         <div class="posts-container">
@@ -92,14 +118,39 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             <!-- Posts tipo Instagram -->
             <?php foreach ($pokemons as $row): ?>
                 <div class="post-card">
-                    <div class="post-avatar"><?= e(strtoupper(substr($row['titulo'], 0, 1))) ?></div>
+                    <?php if (isset($row['autor_profile_image']) && isset($row['autor_id'])): ?>
+                        <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="text-decoration: none;">
+                            <img src="<?php 
+                                    $imgPath = $row['autor_profile_image'];
+                                    if ($imgPath === 'userDefaultImg.jpg') {
+                                        echo 'assets/img/imgProfileuser/' . e($imgPath);
+                                    } else {
+                                        echo 'assets/img/userImg/' . e($imgPath);
+                                    }
+                                 ?>" 
+                                 alt="<?= e($row['autor_username']) ?>" 
+                                 class="post-avatar"
+                                 onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
+                        </a>
+                    <?php else: ?>
+                        <div class="post-avatar"><?= e(strtoupper(substr($row['titulo'], 0, 1))) ?></div>
+                    <?php endif; ?>
                     <div class="post-main">
                         <div class="post-header">
                             <span class="post-username"><?= e($row['titulo']) ?></span>
                             <span class="post-id">#<?= e($row['id']) ?></span>
                         </div>
                         <div class="post-meta">
-                            <small class="post-author">Publicado por: <?= e($row['autor_username'] ?? 'Anónimo') ?></small>
+                            <small class="post-author">
+                                Publicado por: 
+                                <?php if (isset($row['autor_id'])): ?>
+                                    <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="color: #9C27B0; text-decoration: none; font-weight: bold;">
+                                        <?= e($row['autor_username'] ?? 'Anónimo') ?>
+                                    </a>
+                                <?php else: ?>
+                                    <?= e($row['autor_username'] ?? 'Anónimo') ?>
+                                <?php endif; ?>
+                            </small>
                         </div>
                         <div class="post-title">🐾 <?= e($row['titulo']) ?></div>
                         <?php if ($row['descripcion']): ?>

@@ -6,13 +6,26 @@
 $nom_variable_connexio = require __DIR__ . '/db.php';
 
 // Obtener lista paginada de pokémons
-function obtenerPokemons($limit = 100, $offset = 0) {
+function obtenerPokemons($limit = 100, $offset = 0, $orderBy = 'id', $orderDir = 'DESC') {
     global $nom_variable_connexio;
-    // Consulta con JOIN para obtener el nombre del autor
-    $sql = "SELECT p.*, u.username AS autor_username
+    
+    // Validar campo de ordenación (whitelist)
+    $camposPermitidos = ['id', 'titulo', 'created_at'];
+    if (!in_array($orderBy, $camposPermitidos)) {
+        $orderBy = 'id';
+    }
+    
+    // Validar dirección de ordenación
+    $orderDir = strtoupper($orderDir);
+    if ($orderDir !== 'ASC' && $orderDir !== 'DESC') {
+        $orderDir = 'DESC';
+    }
+    
+    // Consulta con JOIN para obtener el nombre del autor y foto de perfil
+    $sql = "SELECT p.*, u.username AS autor_username, u.profile_image AS autor_profile_image, u.id AS autor_id
             FROM pokemons p
             LEFT JOIN users u ON p.user_id = u.id
-            ORDER BY p.id DESC
+            ORDER BY p.$orderBy $orderDir
             LIMIT :limit OFFSET :offset";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
@@ -68,6 +81,34 @@ function contarPokemons() {
     global $nom_variable_connexio;
     $sql = "SELECT COUNT(*) as total FROM pokemons";
     $stmt = $nom_variable_connexio->query($sql);
+    $row = $stmt->fetch();
+    return $row ? (int)$row['total'] : 0;
+}
+
+// Obtener pokémons de un usuario específico
+function obtenerPokemonsPorUsuario($userId, $limit = 100, $offset = 0) {
+    global $nom_variable_connexio;
+    $sql = "SELECT p.*, u.username AS autor_username, u.profile_image AS autor_profile_image
+            FROM pokemons p
+            LEFT JOIN users u ON p.user_id = u.id
+            WHERE p.user_id = :user_id
+            ORDER BY p.id DESC
+            LIMIT :limit OFFSET :offset";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->bindValue(':user_id', (int)$userId, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+// Contar pokémons de un usuario específico
+function contarPokemonsPorUsuario($userId) {
+    global $nom_variable_connexio;
+    $sql = "SELECT COUNT(*) as total FROM pokemons WHERE user_id = :user_id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->bindValue(':user_id', (int)$userId, PDO::PARAM_INT);
+    $stmt->execute();
     $row = $stmt->fetch();
     return $row ? (int)$row['total'] : 0;
 }

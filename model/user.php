@@ -33,14 +33,15 @@ function obtenerUsuarioPorId($id) {
 }
 
 // Crear nuevo usuario
-function crearUsuario($username, $email, $passwordHash) {
+function crearUsuario($username, $email, $passwordHash, $profileImage = 'userDefaultImg.jpg') {
     global $nom_variable_connexio;
-    $sql = "INSERT INTO users (username, email, password_hash) VALUES (:username, :email, :password_hash)";
+    $sql = "INSERT INTO users (username, email, password_hash, profile_image) VALUES (:username, :email, :password_hash, :profile_image)";
     $stmt = $nom_variable_connexio->prepare($sql);
     $ok = $stmt->execute([
         ':username' => $username,
         ':email' => $email,
-        ':password_hash' => $passwordHash
+        ':password_hash' => $passwordHash,
+        ':profile_image' => $profileImage
     ]);
     if (!$ok) return false;
     return (int)$nom_variable_connexio->lastInsertId();
@@ -58,4 +59,42 @@ function verificarCredencialesUsuario($usernameOrEmail, $password) {
         return $user;
     }
     return false;
+}
+
+// Actualizar perfil de usuario
+function actualizarPerfil($userId, $username, $profileImage = null) {
+    global $nom_variable_connexio;
+    
+    if ($profileImage) {
+        $sql = "UPDATE users SET username = :username, profile_image = :profile_image WHERE id = :id";
+        $stmt = $nom_variable_connexio->prepare($sql);
+        return $stmt->execute([
+            ':username' => $username,
+            ':profile_image' => $profileImage,
+            ':id' => (int)$userId
+        ]);
+    } else {
+        $sql = "UPDATE users SET username = :username WHERE id = :id";
+        $stmt = $nom_variable_connexio->prepare($sql);
+        return $stmt->execute([
+            ':username' => $username,
+            ':id' => (int)$userId
+        ]);
+    }
+}
+
+// Verificar si username existe (excluyendo un ID específico)
+function existeUsername($username, $excludeId = null) {
+    global $nom_variable_connexio;
+    if ($excludeId) {
+        $sql = "SELECT COUNT(*) as total FROM users WHERE username = :username AND id != :id";
+        $stmt = $nom_variable_connexio->prepare($sql);
+        $stmt->execute([':username' => $username, ':id' => (int)$excludeId]);
+    } else {
+        $sql = "SELECT COUNT(*) as total FROM users WHERE username = :username";
+        $stmt = $nom_variable_connexio->prepare($sql);
+        $stmt->execute([':username' => $username]);
+    }
+    $row = $stmt->fetch();
+    return $row && $row['total'] > 0;
 }
