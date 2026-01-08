@@ -101,7 +101,21 @@ function obtenerPokemonsPorUsuario($userId, $limit = 100, $offset = 0) {
     $stmt->execute();
     return $stmt->fetchAll();
 }
-
+// Buscar pokémons por título (para búsqueda AJAX)
+function buscarPokemons($query, $limit = 10) {
+    global $nom_variable_connexio;
+    $sql = "SELECT p.*, u.username AS autor_username, u.profile_image AS autor_profile_image, u.id AS autor_id
+            FROM pokemons p
+            LEFT JOIN users u ON p.user_id = u.id
+            WHERE p.titulo LIKE :query 
+            ORDER BY p.created_at DESC 
+            LIMIT :limit";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
 // Contar pokémons de un usuario específico
 function contarPokemonsPorUsuario($userId) {
     global $nom_variable_connexio;

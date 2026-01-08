@@ -178,3 +178,17 @@ function actualizarRolUsuario($userId, $nuevoRol) {
         ':id' => (int)$userId
     ]);
 }
+
+// Buscar usuarios por nombre (para búsqueda AJAX)
+function buscarUsuarios($query, $limit = 10) {
+    global $nom_variable_connexio;
+    $sql = "SELECT id, username, email, profile_image, role FROM users 
+            WHERE username LIKE :query 
+            ORDER BY username ASC 
+            LIMIT :limit";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
+    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}

@@ -78,6 +78,27 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <div class="main-wrapper">
         <!-- Panel lateral izquierdo -->
         <div class="sidebar-left">
+            <!-- Barra de búsqueda -->
+            <div class="search-container">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" 
+                           id="searchInput" 
+                           placeholder="Buscar usuarios o pokémons..." 
+                           autocomplete="off">
+                    <button type="button" id="clearSearch" class="clear-search" style="display: none;">✕</button>
+                </div>
+                
+                <!-- Contenedor de resultados -->
+                <div id="searchResults" class="search-results" style="display: none;">
+                    <div class="search-loading" id="searchLoading" style="display: none;">
+                        <span class="loader"></span>
+                        <span>Buscando...</span>
+                    </div>
+                    <div id="searchContent"></div>
+                </div>
+            </div>
+            
             <!-- Botón insertar (solo para usuarios autenticados) -->
             <?php if (estaIdentificado()): ?>
                 <a href="view/insertar.vista.php" class="btn-capturar">
@@ -279,6 +300,132 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             }
         }
     }
+
+    // ===== BÚSQUEDA AJAX =====
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    const searchContent = document.getElementById('searchContent');
+    const searchLoading = document.getElementById('searchLoading');
+    const clearSearch = document.getElementById('clearSearch');
+    let searchTimeout = null;
+
+    // Función para realizar búsqueda
+    async function realizarBusqueda(query) {
+        if (query.length < 2) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        // Mostrar loading
+        searchLoading.style.display = 'flex';
+        searchResults.style.display = 'block';
+        searchContent.innerHTML = '';
+
+        try {
+            const response = await fetch(`controller/buscar.controller.php?q=${encodeURIComponent(query)}`);
+            const data = await response.json();
+
+            searchLoading.style.display = 'none';
+
+            if (data.success && data.total > 0) {
+                let html = '';
+
+                // Mostrar usuarios
+                if (data.usuarios && data.usuarios.length > 0) {
+                    html += '<div class="search-section"><h4>👥 Usuarios</h4>';
+                    data.usuarios.forEach(usuario => {
+                        const imgSrc = usuario.profile_image === 'userDefaultImg.jpg' 
+                            ? `assets/img/imgProfileuser/${usuario.profile_image}`
+                            : `assets/img/userImg/${usuario.profile_image}`;
+                        
+                        html += `
+                            <a href="view/perfilUsuario.vista.php?id=${usuario.id}" class="search-result-item">
+                                <img src="${imgSrc}" alt="${usuario.username}" class="search-avatar" onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
+                                <div class="search-info">
+                                    <div class="search-name">${usuario.username}</div>
+                                    <div class="search-type">Usuario</div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                // Mostrar publicaciones
+                if (data.publicaciones && data.publicaciones.length > 0) {
+                    html += '<div class="search-section"><h4>🐾 Publicaciones</h4>';
+                    data.publicaciones.forEach(pub => {
+                        const imgSrc = pub.autor_profile_image === 'userDefaultImg.jpg' 
+                            ? `assets/img/imgProfileuser/${pub.autor_profile_image}`
+                            : `assets/img/userImg/${pub.autor_profile_image}`;
+                        
+                        html += `
+                            <a href="view/perfilUsuario.vista.php?id=${pub.autor_id}" class="search-result-item">
+                                <img src="${imgSrc}" alt="${pub.autor_username}" class="search-avatar" onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
+                                <div class="search-info">
+                                    <div class="search-name">${pub.titulo}</div>
+                                    <div class="search-type">Por ${pub.autor_username}</div>
+                                </div>
+                            </a>
+                        `;
+                    });
+                    html += '</div>';
+                }
+
+                searchContent.innerHTML = html;
+            } else {
+                searchContent.innerHTML = '<div class="search-empty">😕 No se encontraron resultados</div>';
+            }
+        } catch (error) {
+            searchLoading.style.display = 'none';
+            searchContent.innerHTML = '<div class="search-error">❌ Error al buscar. Inténtalo de nuevo.</div>';
+        }
+    }
+
+    // Event listener para el input de búsqueda
+    searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+        
+        // Mostrar/ocultar botón de limpiar
+        clearSearch.style.display = query.length > 0 ? 'block' : 'none';
+
+        // Limpiar timeout anterior
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+
+        // Si está vacío, ocultar resultados
+        if (query.length === 0) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        // Esperar 300ms antes de buscar (debounce)
+        searchTimeout = setTimeout(() => {
+            realizarBusqueda(query);
+        }, 300);
+    });
+
+    // Botón para limpiar búsqueda
+    clearSearch.addEventListener('click', function() {
+        searchInput.value = '';
+        clearSearch.style.display = 'none';
+        searchResults.style.display = 'none';
+    });
+
+    // Cerrar resultados al hacer click fuera
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.search-container')) {
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // Reabrir resultados al hacer focus en el input si hay texto
+    searchInput.addEventListener('focus', function() {
+        if (searchInput.value.trim().length >= 2) {
+            searchResults.style.display = 'block';
+        }
+    });
     </script>
 </body>
 </html>
