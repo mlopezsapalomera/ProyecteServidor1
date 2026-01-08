@@ -71,7 +71,7 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
     </nav>
 
     <div class="main-wrapper">
-        <!-- Panel lateral izquierdo -->
+        <!-- Panel lateral izquierdo - Navegación -->
         <div class="sidebar-left">
             <a href="index.php" class="btn-capturar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <span class="icon">🏠</span>
@@ -90,34 +90,35 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
             <?php endif; ?>
         </div>
         
-        <div class="posts-container">
+        <!-- Contenedor central de perfil -->
+        <div class="posts-container profile-center">
             <div class="posts-scroll">
-                <!-- Información del perfil -->
-                <div class="profile-header">
-                    <img src="<?php 
-                            $imgPath = $perfilUsuario['profile_image'];
-                            if ($imgPath === 'userDefaultImg.jpg') {
-                                echo 'assets/img/imgProfileuser/' . e($imgPath);
-                            } else {
-                                echo 'assets/img/userImg/' . e($imgPath);
-                            }
-                         ?>" 
-                         alt="<?= e($perfilUsuario['username']) ?>" 
-                         class="profile-avatar-large"
-                         onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
-                    <div class="profile-info">
-                        <h1 class="profile-username"><?= e($perfilUsuario['username']) ?></h1>
-                        <p class="profile-stats">
-                            <span><strong><?= $totalPokemons ?></strong> publicaciones</span>
-                            <span>Miembro desde <?= date('M Y', strtotime($perfilUsuario['created_at'])) ?></span>
-                        </p>
-                        <?php if ($esMiPerfil): ?>
-                            <p class="profile-email"><?= e($perfilUsuario['email']) ?></p>
-                        <?php endif; ?>
+                <!-- Header del perfil mejorado -->
+                <div class="profile-header-enhanced">
+                    <div class="profile-banner"></div>
+                    <div class="profile-main-info">
+                        <img src="<?php 
+                                $imgPath = $perfilUsuario['profile_image'];
+                                if ($imgPath === 'userDefaultImg.jpg') {
+                                    echo 'assets/img/imgProfileuser/' . e($imgPath);
+                                } else {
+                                    echo 'assets/img/userImg/' . e($imgPath);
+                                }
+                             ?>" 
+                             alt="<?= e($perfilUsuario['username']) ?>" 
+                             class="profile-avatar-large"
+                             onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
+                        <div class="profile-details">
+                            <h1 class="profile-username-large"><?= e($perfilUsuario['username']) ?></h1>
+                            <?php if ($esMiPerfil): ?>
+                                <p class="profile-email-text">📧 <?= e($perfilUsuario['email']) ?></p>
+                            <?php endif; ?>
+                            <p class="profile-joined">📅 Miembro desde <?= date('M Y', strtotime($perfilUsuario['created_at'])) ?></p>
+                        </div>
                     </div>
                 </div>
 
-                <h2 class="section-title">📱 Publicaciones de <?= e($perfilUsuario['username']) ?></h2>
+                <h2 class="section-title-profile">📱 Publicaciones de <?= e($perfilUsuario['username']) ?></h2>
 
                 <?php if (count($pokemons) === 0): ?>
                     <div class="empty">
@@ -201,6 +202,51 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
                         $nextUrl = 'view/perfilUsuario.vista.php?' . http_build_query($baseParams);
                     ?>
                     <a href="<?= e($nextUrl) ?>" class="<?= $nextDisabled ? 'disabled' : '' ?>">Siguiente</a>
+                </div>
+            <?php endif; ?>
+        </div>
+        
+        <!-- Panel lateral derecho - Estadísticas -->
+        <div class="sidebar-right profile-stats-sidebar">
+            <div class="stats-card">
+                <h3 class="stats-title">📊 Estadísticas</h3>
+                <div class="stat-item">
+                    <span class="stat-icon">📝</span>
+                    <div class="stat-info">
+                        <span class="stat-value"><?= $totalPokemons ?></span>
+                        <span class="stat-label">Publicaciones</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">📅</span>
+                    <div class="stat-info">
+                        <span class="stat-value"><?= date('d/m/Y', strtotime($perfilUsuario['created_at'])) ?></span>
+                        <span class="stat-label">Fecha de registro</span>
+                    </div>
+                </div>
+                <?php if ($esMiPerfil): ?>
+                    <div class="stat-item">
+                        <span class="stat-icon">👤</span>
+                        <div class="stat-info">
+                            <span class="stat-value"><?= ucfirst($perfilUsuario['role']) ?></span>
+                            <span class="stat-label">Rol</span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <?php if ($totalPokemons > 0): ?>
+                <div class="stats-card">
+                    <h3 class="stats-title">🎯 Actividad</h3>
+                    <div class="activity-info">
+                        <p class="activity-text">
+                            <?php if ($totalPokemons === 1): ?>
+                                Ha capturado <strong>1 Pokémon</strong>
+                            <?php else: ?>
+                                Ha capturado <strong><?= $totalPokemons ?> Pokémons</strong>
+                            <?php endif; ?>
+                        </p>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>

@@ -76,42 +76,8 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     </nav>
 
     <div class="main-wrapper">
-        <!-- Panel lateral izquierdo -->
+        <!-- Panel lateral izquierdo - Controles de visualización -->
         <div class="sidebar-left">
-            <!-- Barra de búsqueda -->
-            <div class="search-container">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" 
-                           id="searchInput" 
-                           placeholder="Buscar usuarios o pokémons..." 
-                           autocomplete="off">
-                    <button type="button" id="clearSearch" class="clear-search" style="display: none;">✕</button>
-                </div>
-                
-                <!-- Contenedor de resultados -->
-                <div id="searchResults" class="search-results" style="display: none;">
-                    <div class="search-loading" id="searchLoading" style="display: none;">
-                        <span class="loader"></span>
-                        <span>Buscando...</span>
-                    </div>
-                    <div id="searchContent"></div>
-                </div>
-            </div>
-            
-            <!-- Botón insertar (solo para usuarios autenticados) -->
-            <?php if (estaIdentificado()): ?>
-                <a href="view/insertar.vista.php" class="btn-capturar">
-                    <span class="icon">⚡</span>
-                    <span>Capturar Pokémon</span>
-                </a>
-            <?php else: ?>
-                <a href="view/login.vista.php" class="btn-capturar" title="Inicia sesión para capturar">
-                    <span class="icon">⚡</span>
-                    <span>Capturar Pokémon</span>
-                </a>
-            <?php endif; ?>
-            
             <!-- Selector de elementos por página -->
             <form method="get" action="index.php" class="per-page-selector">
                 <label for="perPage">Pokémons por página:</label>
@@ -155,6 +121,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             </form>
         </div>
         
+        <!-- Contenedor central de posts -->
         <div class="posts-container">
             <div class="posts-scroll">
         <?php if ($ok): ?>
@@ -177,9 +144,9 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         <?php else: ?>
             <!-- Posts tipo Instagram -->
             <?php foreach ($pokemons as $row): ?>
-                <div class="post-card">
+                <div class="post-card" onclick="abrirModalPublicacion(<?= htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8') ?>)">
                     <?php if (isset($row['autor_profile_image']) && isset($row['autor_id'])): ?>
-                        <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="text-decoration: none;">
+                        <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="text-decoration: none;" onclick="event.stopPropagation();">
                             <img src="<?php 
                                     $imgPath = $row['autor_profile_image'];
                                     if ($imgPath === 'userDefaultImg.jpg') {
@@ -204,7 +171,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             <small class="post-author">
                                 Publicado por: 
                                 <?php if (isset($row['autor_id'])): ?>
-                                    <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="color: #9C27B0; text-decoration: none; font-weight: bold;">
+                                    <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="color: #9C27B0; text-decoration: none; font-weight: bold;" onclick="event.stopPropagation();">
                                         <?= e($row['autor_username'] ?? 'Anónimo') ?>
                                     </a>
                                 <?php else: ?>
@@ -218,11 +185,11 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                         <?php endif; ?>
                         <div class="post-actions post-actions-right">
                             <?php if (estaIdentificado() && isset($row['user_id']) && (int)$row['user_id'] === idUsuarioActual()): ?>
-                                <a class="post-btn edit" href="view/modificar.vista.php?id=<?= e($row['id']) ?>" title="Editar">
+                                <a class="post-btn edit" href="view/modificar.vista.php?id=<?= e($row['id']) ?>" title="Editar" onclick="event.stopPropagation();">
                                     &#x270F;&#xFE0F;
                                 </a>
                                 <a class="post-btn delete" href="controller/eliminar.controller.php?id=<?= e($row['id']) ?>"
-                                   onclick="return confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.');" title="Eliminar">
+                                   onclick="event.stopPropagation(); return confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.');" title="Eliminar">
                                     &#x1F5D1;&#xFE0F;
                                 </a>
                             <?php endif; ?>
@@ -269,9 +236,169 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                 <a href="<?= e($nextUrl) ?>" class="<?= $nextDisabled ? 'disabled' : '' ?>">Siguiente</a>
             </div>
         </div>
+        
+        <!-- Panel lateral derecho - Búsqueda y Acciones -->
+        <div class="sidebar-right">
+            <!-- Barra de búsqueda -->
+            <div class="search-container">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" 
+                           id="searchInput" 
+                           placeholder="Buscar usuarios o pokémons..." 
+                           autocomplete="off">
+                    <button type="button" id="clearSearch" class="clear-search" style="display: none;">✕</button>
+                </div>
+                
+                <!-- Contenedor de resultados -->
+                <div id="searchResults" class="search-results" style="display: none;">
+                    <div class="search-loading" id="searchLoading" style="display: none;">
+                        <span class="loader"></span>
+                        <span>Buscando...</span>
+                    </div>
+                    <div id="searchContent"></div>
+                </div>
+            </div>
+            
+            <!-- Botón insertar (solo para usuarios autenticados) -->
+            <?php if (estaIdentificado()): ?>
+                <a href="view/insertar.vista.php" class="btn-capturar">
+                    <span class="icon">⚡</span>
+                    <span>Capturar Pokémon</span>
+                </a>
+            <?php else: ?>
+                <a href="view/login.vista.php" class="btn-capturar" title="Inicia sesión para capturar">
+                    <span class="icon">⚡</span>
+                    <span>Capturar Pokémon</span>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Modal para ver publicación completa -->
+    <div id="modalPublicacion" class="modal-overlay" style="display: none;" onclick="cerrarModalPublicacion()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="cerrarModalPublicacion()">✕</button>
+            <div class="modal-header">
+                <a id="modalAvatarLink" href="#" onclick="event.stopPropagation();">
+                    <img id="modalAvatar" src="" alt="" class="modal-avatar">
+                </a>
+                <div class="modal-user-info">
+                    <h3 id="modalUsername" class="modal-username"></h3>
+                    <p class="modal-autor">
+                        Publicado por: 
+                        <a id="modalAutorLink" href="#" class="modal-autor-link" onclick="event.stopPropagation();">
+                            <span id="modalAutor"></span>
+                        </a>
+                    </p>
+                </div>
+            </div>
+            <div class="modal-body">
+                <h2 id="modalTitulo" class="modal-titulo"></h2>
+                <p id="modalDescripcion" class="modal-descripcion"></p>
+                <p id="modalFecha" class="modal-fecha"></p>
+            </div>
+            <div id="modalActions" class="modal-actions" style="display: none;">
+                <a id="modalEditBtn" href="#" class="modal-btn edit">
+                    <span>✏️</span> Editar
+                </a>
+                <a id="modalDeleteBtn" href="#" class="modal-btn delete" onclick="return confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.');">
+                    <span>🗑️</span> Eliminar
+                </a>
+            </div>
+        </div>
     </div>
 
     <script>
+    // ===== MODAL DE PUBLICACIÓN =====
+    function abrirModalPublicacion(post) {
+        const modal = document.getElementById('modalPublicacion');
+        const avatarLink = document.getElementById('modalAvatarLink');
+        const avatar = document.getElementById('modalAvatar');
+        const username = document.getElementById('modalUsername');
+        const autorLink = document.getElementById('modalAutorLink');
+        const autor = document.getElementById('modalAutor');
+        const titulo = document.getElementById('modalTitulo');
+        const descripcion = document.getElementById('modalDescripcion');
+        const fecha = document.getElementById('modalFecha');
+        const actions = document.getElementById('modalActions');
+        const editBtn = document.getElementById('modalEditBtn');
+        const deleteBtn = document.getElementById('modalDeleteBtn');
+
+        // Configurar imagen de avatar
+        let imgSrc = 'assets/img/imgProfileuser/userDefaultImg.jpg';
+        if (post.autor_profile_image) {
+            if (post.autor_profile_image === 'userDefaultImg.jpg') {
+                imgSrc = 'assets/img/imgProfileuser/' + post.autor_profile_image;
+            } else {
+                imgSrc = 'assets/img/userImg/' + post.autor_profile_image;
+            }
+        }
+        avatar.src = imgSrc;
+        avatar.alt = post.autor_username || 'Usuario';
+
+        // Configurar enlaces al perfil del autor
+        if (post.autor_id) {
+            const perfilUrl = 'view/perfilUsuario.vista.php?id=' + post.autor_id;
+            avatarLink.href = perfilUrl;
+            autorLink.href = perfilUrl;
+        } else {
+            avatarLink.href = '#';
+            autorLink.href = '#';
+        }
+
+        // Configurar contenido
+        username.textContent = post.titulo;
+        autor.textContent = post.autor_username || 'Anónimo';
+        titulo.innerHTML = '🐾 ' + post.titulo;
+        descripcion.innerHTML = post.descripcion ? '📝 ' + post.descripcion : '<em style="color: #999;">Sin descripción</em>';
+        
+        // Formatear fecha si existe
+        if (post.created_at) {
+            const fechaObj = new Date(post.created_at);
+            fecha.textContent = '📅 ' + fechaObj.toLocaleDateString('es-ES', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } else {
+            fecha.textContent = '';
+        }
+
+        // Mostrar botones de acción si es el dueño
+        <?php if (estaIdentificado()): ?>
+            const currentUserId = <?= idUsuarioActual() ?>;
+            if (post.user_id && parseInt(post.user_id) === currentUserId) {
+                actions.style.display = 'flex';
+                editBtn.href = 'view/modificar.vista.php?id=' + post.id;
+                deleteBtn.href = 'controller/eliminar.controller.php?id=' + post.id;
+            } else {
+                actions.style.display = 'none';
+            }
+        <?php else: ?>
+            actions.style.display = 'none';
+        <?php endif; ?>
+
+        // Mostrar modal
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModalPublicacion() {
+        const modal = document.getElementById('modalPublicacion');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Cerrar modal con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarModalPublicacion();
+        }
+    });
+
     // Limpia ?ok y ?error de la URL tras mostrar el mensaje
     if (window.location.search.match(/[?&](ok|error)=/)) {
         setTimeout(() => {
