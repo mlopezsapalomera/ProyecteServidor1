@@ -48,6 +48,7 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de <?= e($perfilUsuario['username']) ?> - PokéNet</title>
+    <link rel="icon" type="image/jpeg" href="assets/img/fondo.jpg">
     <link rel="stylesheet" href="style/styles.css?v=<?= time() ?>">
 </head>
 <body class="no-page-scroll">

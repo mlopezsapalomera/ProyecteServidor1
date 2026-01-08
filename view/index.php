@@ -1,9 +1,16 @@
 <?php
 require_once __DIR__ . '/../controller/paginacio.controller.php';
 require_once __DIR__ . '/../security/auth.php';
+require_once __DIR__ . '/../model/user.php';
 
 // Pequeño helper para escapar HTML
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
+
+// Obtener datos completos del usuario actual si está autenticado
+$usuarioCompleto = null;
+if (estaIdentificado()) {
+    $usuarioCompleto = obtenerUsuarioPorId(idUsuarioActual());
+}
 
 $ok = isset($_GET['ok']) ? $_GET['ok'] : null;
 $error = isset($_GET['error']) ? $_GET['error'] : null;
@@ -15,6 +22,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PokéNet Social - Red Social Pokémon</title>
+    <link rel="icon" type="image/jpeg" href="assets/img/fondo.jpg">
     <link rel="stylesheet" href="style/styles.css?v=<?= time() ?>">
 </head>
 <body class="no-page-scroll">
@@ -23,11 +31,42 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         <div class="navbar-container">
             <div class="navbar-brand">🌟 PokéNet</div>
             <div class="navbar-actions">
-                <?php if (estaIdentificado()): ?>
-                    <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
-                        <?= e(usuarioActual()['username']) ?>
-                    </a>
-                    <a href="controller/logout.controller.php" class="nav-btn">Cerrar sesión</a>
+                <?php if (estaIdentificado() && $usuarioCompleto): ?>
+                    <!-- Dropdown de usuario con foto de perfil -->
+                    <div class="user-dropdown">
+                        <button class="user-dropdown-toggle" onclick="toggleUserDropdown()">
+                            <img src="<?php 
+                                    $imgPath = $usuarioCompleto['profile_image'];
+                                    if ($imgPath === 'userDefaultImg.jpg') {
+                                        echo 'assets/img/imgProfileuser/' . e($imgPath);
+                                    } else {
+                                        echo 'assets/img/userImg/' . e($imgPath);
+                                    }
+                                 ?>" 
+                                 alt="<?= e($usuarioCompleto['username']) ?>" 
+                                 class="user-dropdown-avatar"
+                                 onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
+                            <span class="user-dropdown-name"><?= e($usuarioCompleto['username']) ?></span>
+                            <span class="user-dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown-menu" id="userDropdownMenu">
+                            <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="dropdown-item">
+                                <span class="dropdown-icon">👤</span>
+                                Mi Perfil
+                            </a>
+                            <?php if (esAdmin()): ?>
+                                <a href="view/adminPanel.vista.php" class="dropdown-item">
+                                    <span class="dropdown-icon">👨‍💼</span>
+                                    Panel de Usuarios
+                                </a>
+                            <?php endif; ?>
+                            <div class="dropdown-divider"></div>
+                            <a href="controller/logout.controller.php" class="dropdown-item logout">
+                                <span class="dropdown-icon">🚪</span>
+                                Cerrar Sesión
+                            </a>
+                        </div>
+                    </div>
                 <?php else: ?>
                     <a href="view/login.vista.php" class="nav-btn login">Iniciar sesión</a>
                     <a href="view/register.vista.php" class="nav-btn register">Registrarse</a>
@@ -217,6 +256,28 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         setTimeout(() => {
             window.history.replaceState({}, document.title, window.location.pathname);
         }, 100);
+    }
+
+    // Toggle del dropdown de usuario
+    function toggleUserDropdown() {
+        const menu = document.getElementById('userDropdownMenu');
+        menu.classList.toggle('show');
+    }
+
+    // Cerrar dropdown al hacer click fuera
+    window.onclick = function(event) {
+        if (!event.target.matches('.user-dropdown-toggle') && 
+            !event.target.matches('.user-dropdown-avatar') && 
+            !event.target.matches('.user-dropdown-name') &&
+            !event.target.matches('.user-dropdown-arrow')) {
+            const dropdowns = document.getElementsByClassName('user-dropdown-menu');
+            for (let i = 0; i < dropdowns.length; i++) {
+                const openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
     }
     </script>
 </body>

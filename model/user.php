@@ -98,3 +98,83 @@ function existeUsername($username, $excludeId = null) {
     $row = $stmt->fetch();
     return $row && $row['total'] > 0;
 }
+
+// Actualizar contraseña de usuario
+function actualizarContrasena($userId, $nuevaPasswordHash) {
+    global $nom_variable_connexio;
+    $sql = "UPDATE users SET password_hash = :password_hash WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    return $stmt->execute([
+        ':password_hash' => $nuevaPasswordHash,
+        ':id' => (int)$userId
+    ]);
+}
+
+// Obtener todos los usuarios (excepto admins para el panel de administración)
+function obtenerTodosLosUsuarios($excluirAdmins = true) {
+    global $nom_variable_connexio;
+    if ($excluirAdmins) {
+        $sql = "SELECT id, username, email, profile_image, role, created_at FROM users WHERE role != 'admin' ORDER BY created_at DESC";
+    } else {
+        $sql = "SELECT id, username, email, profile_image, role, created_at FROM users ORDER BY created_at DESC";
+    }
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+// Contar publicaciones de un usuario
+function contarPublicacionesUsuario($userId) {
+    global $nom_variable_connexio;
+    $sql = "SELECT COUNT(*) as total FROM pokemons WHERE user_id = :user_id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':user_id' => (int)$userId]);
+    $row = $stmt->fetch();
+    return $row ? (int)$row['total'] : 0;
+}
+
+// Eliminar usuario y todas sus publicaciones (CASCADE)
+function eliminarUsuario($userId) {
+    global $nom_variable_connexio;
+    
+    try {
+        // Iniciar transacción
+        $nom_variable_connexio->beginTransaction();
+        
+        // Primero eliminar todas las publicaciones del usuario
+        $sql1 = "DELETE FROM pokemons WHERE user_id = :user_id";
+        $stmt1 = $nom_variable_connexio->prepare($sql1);
+        $stmt1->execute([':user_id' => (int)$userId]);
+        
+        // Luego eliminar el usuario
+        $sql2 = "DELETE FROM users WHERE id = :id";
+        $stmt2 = $nom_variable_connexio->prepare($sql2);
+        $stmt2->execute([':id' => (int)$userId]);
+        
+        // Confirmar transacción
+        $nom_variable_connexio->commit();
+        return true;
+    } catch (Exception $e) {
+        // Revertir en caso de error
+        $nom_variable_connexio->rollBack();
+        return false;
+    }
+}
+
+// Actualizar rol de usuario
+function actualizarRolUsuario($userId, $nuevoRol) {
+    global $nom_variable_connexio;
+    
+    // Validar que el rol sea válido
+    $rolesValidos = ['user', 'admin'];
+    if (!in_array($nuevoRol, $rolesValidos)) {
+        return false;
+    }
+    
+    $sql = "UPDATE users SET role = :role WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    return $stmt->execute([
+        ':role' => $nuevoRol,
+        ':id' => (int)$userId
+    ]);
+}

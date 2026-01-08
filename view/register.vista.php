@@ -12,6 +12,7 @@ $correuPrefill = isset($_GET['correu']) ? $_GET['correu'] : '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registrarse - PokéNet Social</title>
+  <link rel="icon" type="image/jpeg" href="assets/img/fondo.jpg">
   <link rel="stylesheet" href="style/styles.css">
   </head>
 <body>

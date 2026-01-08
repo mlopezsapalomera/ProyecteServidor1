@@ -15,6 +15,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Capturar Pokémon - PokéNet Social</title>
+  <link rel="icon" type="image/jpeg" href="assets/img/fondo.jpg">
   <link rel="stylesheet" href="style/styles.css">
 </head>
 <body>

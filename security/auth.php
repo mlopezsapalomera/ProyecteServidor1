@@ -34,7 +34,8 @@ mantenerSesion();
 function iniciarSesion(array $usuario) {
     $_SESSION['usuario'] = [
         'id' => $usuario['id'],
-        'username' => $usuario['username']
+        'username' => $usuario['username'],
+        'role' => $usuario['role'] ?? 'user'
     ];
     $_SESSION['last_activity'] = time();
 }
@@ -58,4 +59,14 @@ function usuarioActual() {
 // Obtener ID del usuario actual
 function idUsuarioActual() {
     return estaIdentificado() ? (int)$_SESSION['usuario']['id'] : null;
+}
+
+// Obtener rol del usuario actual
+function rolUsuarioActual() {
+    return estaIdentificado() ? ($_SESSION['usuario']['role'] ?? 'user') : null;
+}
+
+// Verificar si el usuario actual es admin
+function esAdmin() {
+    return estaIdentificado() && rolUsuarioActual() === 'admin';
 }

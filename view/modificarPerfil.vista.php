@@ -28,6 +28,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Perfil - PokéNet</title>
+    <link rel="icon" type="image/jpeg" href="assets/img/fondo.jpg">
     <link rel="stylesheet" href="style/styles.css?v=<?= time() ?>">
 </head>
 <body class="no-page-scroll">
@@ -150,6 +151,23 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             </a>
                         </div>
                     </form>
+
+                    <!-- Separador -->
+                    <div class="edit-profile-separator">
+                        <span>🔒 Seguridad de la Cuenta</span>
+                    </div>
+
+                    <!-- Botón para cambiar contraseña -->
+                    <div class="security-section">
+                        <div class="security-info">
+                            <h3>🔐 Cambiar Contraseña</h3>
+                            <p>Actualiza tu contraseña para mantener tu cuenta segura. Te recomendamos usar una contraseña fuerte y única.</p>
+                        </div>
+                        <a href="view/cambiarContrasena.vista.php" class="btn-security">
+                            <span class="icon">🔒</span>
+                            Cambiar Contraseña
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
