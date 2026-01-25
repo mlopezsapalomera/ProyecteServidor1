@@ -5,22 +5,22 @@
 require_once __DIR__ . '/../model/pokemon.php';
 
 // Obtener parámetros de paginación
-$perPage = isset($_GET['perPage']) && is_numeric($_GET['perPage']) ? (int)$_GET['perPage'] : 5;
-if ($perPage < 1) $perPage = 5;
+$porPagina = isset($_GET['porPagina']) && is_numeric($_GET['porPagina']) ? (int)$_GET['porPagina'] : 5;
+if ($porPagina < 1) $porPagina = 5;
 
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($page < 1) $page = 1;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+if ($pagina < 1) $pagina = 1;
 
 // Obtener parámetros de ordenación
-$orderBy = isset($_GET['orderBy']) ? $_GET['orderBy'] : 'id';
-$orderDir = isset($_GET['orderDir']) ? $_GET['orderDir'] : 'DESC';
+$ordenarPor = isset($_GET['ordenarPor']) ? $_GET['ordenarPor'] : 'id';
+$direccionOrden = isset($_GET['direccionOrden']) ? $_GET['direccionOrden'] : 'DESC';
 
 // Calcular paginación
 $totalPokemons = contarPokemons();
-$totalPages = max(1, ceil($totalPokemons / $perPage));
-if ($page > $totalPages) $page = $totalPages;
+$totalPaginas = max(1, ceil($totalPokemons / $porPagina));
+if ($pagina > $totalPaginas) $pagina = $totalPaginas;
 
 // Obtener pokémons de la página actual con ordenación
-$offset = ($page - 1) * $perPage;
-$pokemons = obtenerPokemons($perPage, $offset, $orderBy, $orderDir);
+$desplazamiento = ($pagina - 1) * $porPagina;
+$pokemons = obtenerPokemons($porPagina, $desplazamiento, $ordenarPor, $direccionOrden);
 ?>

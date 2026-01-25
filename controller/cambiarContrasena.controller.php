@@ -18,59 +18,59 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Obtener ID del usuario actual
-$userId = idUsuarioActual();
-$usuarioActual = obtenerUsuarioPorId($userId);
+$idUsuario = idUsuarioActual();
+$datosUsuarioActual = obtenerUsuarioPorId($idUsuario);
 
-if (!$usuarioActual) {
+if (!$datosUsuarioActual) {
     header('Location: ../view/index.php?error=' . urlencode('Usuario no encontrado'));
     exit;
 }
 
 // Recoger datos del formulario
-$currentPassword = isset($_POST['current_password']) ? $_POST['current_password'] : '';
-$newPassword = isset($_POST['new_password']) ? $_POST['new_password'] : '';
-$confirmPassword = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
+$contrasenaActual = isset($_POST['current_password']) ? $_POST['current_password'] : '';
+$contrasenaNueva = isset($_POST['new_password']) ? $_POST['new_password'] : '';
+$contrasenaConfirmar = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
 
 // Validaciones
-$errors = [];
+$errores = [];
 
 // Validar que todos los campos estén completos
-if ($currentPassword === '' || $newPassword === '' || $confirmPassword === '') {
-    $errors[] = 'Todos los campos son obligatorios.';
+if ($contrasenaActual === '' || $contrasenaNueva === '' || $contrasenaConfirmar === '') {
+    $errores[] = 'Todos los campos son obligatorios.';
 }
 
 // Validar que la contraseña actual sea correcta
-if (empty($errors) && !password_verify($currentPassword, $usuarioActual['password_hash'])) {
-    $errors[] = 'La contraseña actual es incorrecta.';
+if (empty($errores) && !password_verify($contrasenaActual, $datosUsuarioActual['password_hash'])) {
+    $errores[] = 'La contraseña actual es incorrecta.';
 }
 
 // Validar longitud de la nueva contraseña
-if (strlen($newPassword) < 6) {
-    $errors[] = 'La nueva contraseña debe tener al menos 6 caracteres.';
+if (strlen($contrasenaNueva) < 6) {
+    $errores[] = 'La nueva contraseña debe tener al menos 6 caracteres.';
 }
 
 // Validar que las contraseñas nuevas coincidan
-if ($newPassword !== $confirmPassword) {
-    $errors[] = 'Las contraseñas nuevas no coinciden.';
+if ($contrasenaNueva !== $contrasenaConfirmar) {
+    $errores[] = 'Las contraseñas nuevas no coinciden.';
 }
 
 // Validar que la nueva contraseña sea diferente a la actual
-if (empty($errors) && $currentPassword === $newPassword) {
-    $errors[] = 'La nueva contraseña debe ser diferente a la actual.';
+if (empty($errores) && $contrasenaActual === $contrasenaNueva) {
+    $errores[] = 'La nueva contraseña debe ser diferente a la actual.';
 }
 
 // Mostrar errores si existen
-if (!empty($errors)) {
-    $qs = http_build_query(['error' => implode(' ', $errors)]);
+if (!empty($errores)) {
+    $qs = http_build_query(['error' => implode(' ', $errores)]);
     header('Location: ../view/cambiarContrasena.vista.php?' . $qs);
     exit;
 }
 
 // Hashear la nueva contraseña
-$nuevoHash = password_hash($newPassword, PASSWORD_DEFAULT);
+$nuevoHash = password_hash($contrasenaNueva, PASSWORD_DEFAULT);
 
 // Actualizar contraseña en la base de datos
-$resultado = actualizarContrasena($userId, $nuevoHash);
+$resultado = actualizarContrasena($idUsuario, $nuevoHash);
 
 if ($resultado) {
     header('Location: ../view/cambiarContrasena.vista.php?ok=' . urlencode('Contraseña actualizada correctamente.'));

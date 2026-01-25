@@ -18,37 +18,37 @@ $contrasenya = isset($_POST['password']) ? $_POST['password'] : '';
 $contrasenya2 = isset($_POST['password2']) ? $_POST['password2'] : '';
 
 // Validar campos del formulario
-$errors = [];
-if ($usuari === '') $errors[] = 'El nombre de usuario es obligatorio.';
-if ($correu === '' || !filter_var($correu, FILTER_VALIDATE_EMAIL)) $errors[] = 'Correo electrónico inválido.';
-if ($contrasenya === '' || $contrasenya2 === '') $errors[] = 'Introduce la contraseña dos veces.';
-if ($contrasenya !== $contrasenya2) $errors[] = 'Las contraseñas no coinciden.';
+$errores = [];
+if ($usuari === '') $errores[] = 'El nombre de usuario es obligatorio.';
+if ($correu === '' || !filter_var($correu, FILTER_VALIDATE_EMAIL)) $errores[] = 'Correo electrónico inválido.';
+if ($contrasenya === '' || $contrasenya2 === '') $errores[] = 'Introduce la contraseña dos veces.';
+if ($contrasenya !== $contrasenya2) $errores[] = 'Las contraseñas no coinciden.';
 
 // Validar fortaleza de la contraseña
 if (strlen($contrasenya) < 8 ||
     !preg_match('/[A-Z]/', $contrasenya) ||
     !preg_match('/[a-z]/', $contrasenya) ||
     !preg_match('/[0-9]/', $contrasenya)) {
-    $errors[] = 'La contraseña debe tener al menos 8 caracteres, incluir mayúscula, minúscula y número.';
+    $errores[] = 'La contraseña debe tener al menos 8 caracteres, incluir mayúscula, minúscula y número.';
 }
 
 // Verificar que el usuario o email no existan
-if (obtenerUsuarioPorNombre($usuari)) $errors[] = 'El usuario ya existe.';
-if (obtenerUsuarioPorEmail($correu)) $errors[] = 'El correo ya está registrado.';
+if (obtenerUsuarioPorNombre($usuari)) $errores[] = 'El usuario ya existe.';
+if (obtenerUsuarioPorEmail($correu)) $errores[] = 'El correo ya está registrado.';
 
 // Mostrar errores si existen
-if (!empty($errors)) {
-    $qs = http_build_query(['error' => implode(' ', $errors), 'usuari' => $usuari, 'correu' => $correu]);
+if (!empty($errores)) {
+    $qs = http_build_query(['error' => implode(' ', $errores), 'usuari' => $usuari, 'correu' => $correu]);
     header('Location: ../view/register.vista.php?' . $qs);
     exit;
 }
 
 // Crear el usuario
 $hash = password_hash($contrasenya, PASSWORD_DEFAULT);
-$newId = crearUsuario($usuari, $correu, $hash);
-if ($newId) {
-    $usuariReg = obtenerUsuarioPorId($newId);
-    iniciarSesion($usuariReg);
+$nuevoId = crearUsuario($usuari, $correu, $hash);
+if ($nuevoId) {
+    $usuarioRegistrado = obtenerUsuarioPorId($nuevoId);
+    iniciarSesion($usuarioRegistrado);
     header('Location: ../view/index.php?ok=' . urlencode('Registro completado. Bienvenido ' . $usuari . '!'));
     exit;
 }

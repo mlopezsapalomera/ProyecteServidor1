@@ -80,44 +80,44 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         <div class="sidebar-left">
             <!-- Selector de elementos por página -->
             <form method="get" action="index.php" class="per-page-selector">
-                <label for="perPage">Pokémons por página:</label>
-                <select name="perPage" id="perPage" onchange="this.form.submit()">
-                    <option value="2" <?= $perPage==2?'selected':'' ?>>2</option>
-                    <option value="5" <?= $perPage==5?'selected':'' ?>>5</option>
-                    <option value="10" <?= $perPage==10?'selected':'' ?>>10</option>
-                    <option value="20" <?= $perPage==20?'selected':'' ?>>20</option>
+                <label for="porPagina">Pokémons por página:</label>
+                <select name="porPagina" id="porPagina" onchange="this.form.submit()">
+                    <option value="2" <?= $porPagina==2?'selected':'' ?>>2</option>
+                    <option value="5" <?= $porPagina==5?'selected':'' ?>>5</option>
+                    <option value="10" <?= $porPagina==10?'selected':'' ?>>10</option>
+                    <option value="20" <?= $porPagina==20?'selected':'' ?>>20</option>
                 </select>
-                <!-- Si hay otros parámetros, mantenerlos excepto page -->
+                <!-- Si hay otros parámetros, mantenerlos excepto pagina -->
                 <?php foreach($_GET as $k=>$v) {
-                    if($k !== 'perPage' && $k !== 'page') { ?>
+                    if($k !== 'porPagina' && $k !== 'pagina') { ?>
                         <input type="hidden" name="<?= e($k) ?>" value="<?= e($v) ?>">
                 <?php }
                 } ?>
-                <input type="hidden" name="page" value="1">
+                <input type="hidden" name="pagina" value="1">
             </form>
             
             <!-- Selector de ordenación -->
             <form method="get" action="index.php" class="per-page-selector">
-                <label for="orderBy">Ordenar por:</label>
-                <select name="orderBy" id="orderBy" onchange="this.form.submit()">
-                    <option value="id" <?= $orderBy=='id'?'selected':'' ?>>ID</option>
-                    <option value="titulo" <?= $orderBy=='titulo'?'selected':'' ?>>Título</option>
-                    <option value="created_at" <?= $orderBy=='created_at'?'selected':'' ?>>Fecha</option>
+                <label for="ordenarPor">Ordenar por:</label>
+                <select name="ordenarPor" id="ordenarPor" onchange="this.form.submit()">
+                    <option value="id" <?= $ordenarPor=='id'?'selected':'' ?>>ID</option>
+                    <option value="titulo" <?= $ordenarPor=='titulo'?'selected':'' ?>>Título</option>
+                    <option value="created_at" <?= $ordenarPor=='created_at'?'selected':'' ?>>Fecha</option>
                 </select>
                 
-                <label for="orderDir">Dirección:</label>
-                <select name="orderDir" id="orderDir" onchange="this.form.submit()">
-                    <option value="ASC" <?= $orderDir=='ASC'?'selected':'' ?>>↑ Ascendente</option>
-                    <option value="DESC" <?= $orderDir=='DESC'?'selected':'' ?>>↓ Descendente</option>
+                <label for="direccionOrden">Dirección:</label>
+                <select name="direccionOrden" id="direccionOrden" onchange="this.form.submit()">
+                    <option value="ASC" <?= $direccionOrden=='ASC'?'selected':'' ?>>↑ Ascendente</option>
+                    <option value="DESC" <?= $direccionOrden=='DESC'?'selected':'' ?>>↓ Descendente</option>
                 </select>
                 
                 <!-- Mantener otros parámetros -->
                 <?php foreach($_GET as $k=>$v) {
-                    if($k !== 'orderBy' && $k !== 'orderDir' && $k !== 'page') { ?>
+                    if($k !== 'ordenarPor' && $k !== 'direccionOrden' && $k !== 'pagina') { ?>
                         <input type="hidden" name="<?= e($k) ?>" value="<?= e($v) ?>">
                 <?php }
                 } ?>
-                <input type="hidden" name="page" value="1">
+                <input type="hidden" name="pagina" value="1">
             </form>
         </div>
         
@@ -204,36 +204,36 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             <div class="pagination pagination-fixed">
                 <?php
                     // Enlaces Anterior / Siguiente con preservación de parámetros
-                    $baseParams = $_GET;
-                    $baseParams['perPage'] = $perPage;
+                    $parametrosBase = $_GET;
+                    $parametrosBase['porPagina'] = $porPagina;
                     // Anterior
-                    $prevDisabled = ($page <= 1);
-                    $prevPage = max(1, $page - 1);
-                    $baseParams['page'] = $prevPage;
-                    $prevUrl = 'index.php?' . http_build_query($baseParams);
+                    $paginaAnteriorDeshabilitada = ($pagina <= 1);
+                    $paginaAnterior = max(1, $pagina - 1);
+                    $parametrosBase['pagina'] = $paginaAnterior;
+                    $urlAnterior = 'index.php?' . http_build_query($parametrosBase);
                 ?>
-                <a href="<?= e($prevUrl) ?>" class="<?= $prevDisabled ? 'disabled' : '' ?>">Anterior</a>
+                <a href="<?= e($urlAnterior) ?>" class="<?= $paginaAnteriorDeshabilitada ? 'disabled' : '' ?>">Anterior</a>
 
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
                     <?php
-                        $params = $_GET;
-                        $params['page'] = $i;
-                        $params['perPage'] = $perPage;
-                        $url = 'index.php?' . http_build_query($params);
+                        $parametros = $_GET;
+                        $parametros['pagina'] = $i;
+                        $parametros['porPagina'] = $porPagina;
+                        $url = 'index.php?' . http_build_query($parametros);
                     ?>
-                    <a href="<?= e($url) ?>" class="<?= $i == $page ? 'active' : '' ?>">
+                    <a href="<?= e($url) ?>" class="<?= $i == $pagina ? 'active' : '' ?>">
                         <?= $i ?>
                     </a>
                 <?php endfor; ?>
 
                 <?php
                     // Siguiente
-                    $nextDisabled = ($page >= $totalPages);
-                    $nextPage = min($totalPages, $page + 1);
-                    $baseParams['page'] = $nextPage;
-                    $nextUrl = 'index.php?' . http_build_query($baseParams);
+                    $paginaSiguienteDeshabilitada = ($pagina >= $totalPaginas);
+                    $paginaSiguiente = min($totalPaginas, $pagina + 1);
+                    $parametrosBase['pagina'] = $paginaSiguiente;
+                    $urlSiguiente = 'index.php?' . http_build_query($parametrosBase);
                 ?>
-                <a href="<?= e($nextUrl) ?>" class="<?= $nextDisabled ? 'disabled' : '' ?>">Siguiente</a>
+                <a href="<?= e($urlSiguiente) ?>" class="<?= $paginaSiguienteDeshabilitada ? 'disabled' : '' ?>">Siguiente</a>
             </div>
         </div>
         

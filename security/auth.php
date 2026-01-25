@@ -19,13 +19,13 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Verificar y mantener la sesión activa
 function mantenerSesion() {
-    if (!isset($_SESSION['last_activity'])) return;
-    if (time() - $_SESSION['last_activity'] > AUTH_TIEMPO_INACTIVIDAD) {
+    if (!isset($_SESSION['ultima_actividad'])) return;
+    if (time() - $_SESSION['ultima_actividad'] > AUTH_TIEMPO_INACTIVIDAD) {
         session_unset();
         session_destroy();
         return;
     }
-    $_SESSION['last_activity'] = time();
+    $_SESSION['ultima_actividad'] = time();
 }
 
 mantenerSesion();
@@ -37,7 +37,7 @@ function iniciarSesion(array $usuario) {
         'username' => $usuario['username'],
         'role' => $usuario['role'] ?? 'user'
     ];
-    $_SESSION['last_activity'] = time();
+    $_SESSION['ultima_actividad'] = time();
 }
 
 // Cerrar sesión

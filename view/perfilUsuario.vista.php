@@ -23,20 +23,20 @@ if (!$perfilUsuario) {
 }
 
 // Obtener parámetros de paginación para posts del usuario
-$perPage = isset($_GET['perPage']) && is_numeric($_GET['perPage']) ? (int)$_GET['perPage'] : 10;
-if ($perPage < 1) $perPage = 10;
+$porPagina = isset($_GET['porPagina']) && is_numeric($_GET['porPagina']) ? (int)$_GET['porPagina'] : 10;
+if ($porPagina < 1) $porPagina = 10;
 
-$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-if ($page < 1) $page = 1;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+if ($pagina < 1) $pagina = 1;
 
 // Calcular paginación
 $totalPokemons = contarPokemonsPorUsuario($perfilUserId);
-$totalPages = max(1, ceil($totalPokemons / $perPage));
-if ($page > $totalPages) $page = $totalPages;
+$totalPaginas = max(1, ceil($totalPokemons / $porPagina));
+if ($pagina > $totalPaginas) $pagina = $totalPaginas;
 
 // Obtener pokémons del usuario
-$offset = ($page - 1) * $perPage;
-$pokemons = obtenerPokemonsPorUsuario($perfilUserId, $perPage, $offset);
+$desplazamiento = ($pagina - 1) * $porPagina;
+$pokemons = obtenerPokemonsPorUsuario($perfilUserId, $porPagina, $desplazamiento);
 
 // Verificar si es el perfil del usuario actual
 $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
@@ -170,34 +170,34 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
             </div>
             
             <!-- Paginación -->
-            <?php if ($totalPages > 1): ?>
+            <?php if ($totalPaginas > 1): ?>
                 <div class="pagination pagination-fixed">
                     <?php
-                        $baseParams = $_GET;
-                        $baseParams['perPage'] = $perPage;
-                        $baseParams['id'] = $perfilUserId;
+                        $parametrosBase = $_GET;
+                        $parametrosBase['porPagina'] = $porPagina;
+                        $parametrosBase['id'] = $perfilUserId;
                         
-                        $prevDisabled = ($page <= 1);
-                        $prevPage = max(1, $page - 1);
-                        $baseParams['page'] = $prevPage;
-                        $prevUrl = 'view/perfilUsuario.vista.php?' . http_build_query($baseParams);
+                        $paginaAnteriorDeshabilitada = ($pagina <= 1);
+                        $paginaAnterior = max(1, $pagina - 1);
+                        $parametrosBase['pagina'] = $paginaAnterior;
+                        $urlAnterior = 'view/perfilUsuario.vista.php?' . http_build_query($parametrosBase);
                     ?>
-                    <a href="<?= e($prevUrl) ?>" class="<?= $prevDisabled ? 'disabled' : '' ?>">Anterior</a>
+                    <a href="<?= e($urlAnterior) ?>" class="<?= $paginaAnteriorDeshabilitada ? 'disabled' : '' ?>">Anterior</a>
 
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
                         <?php
-                            $params = $baseParams;
-                            $params['page'] = $i;
-                            $url = 'view/perfilUsuario.vista.php?' . http_build_query($params);
+                            $parametros = $parametrosBase;
+                            $parametros['pagina'] = $i;
+                            $url = 'view/perfilUsuario.vista.php?' . http_build_query($parametros);
                         ?>
-                        <a href="<?= e($url) ?>" class="<?= $i == $page ? 'active' : '' ?>">
+                        <a href="<?= e($url) ?>" class="<?= $i == $pagina ? 'active' : '' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
 
                     <?php
-                        $nextDisabled = ($page >= $totalPages);
-                        $nextPage = min($totalPages, $page + 1);
+                        $paginaSiguienteDeshabilitada = ($pagina >= $totalPaginas);
+                        $paginaSiguiente = min($totalPaginas, $pagina + 1);
                         $baseParams['page'] = $nextPage;
                         $nextUrl = 'view/perfilUsuario.vista.php?' . http_build_query($baseParams);
                     ?>

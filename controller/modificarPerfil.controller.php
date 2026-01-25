@@ -18,27 +18,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Obtener ID del usuario actual
-$userId = idUsuarioActual();
-$usuarioActual = obtenerUsuarioPorId($userId);
+$idUsuario = idUsuarioActual();
+$datosUsuarioActual = obtenerUsuarioPorId($idUsuario);
 
-if (!$usuarioActual) {
+if (!$datosUsuarioActual) {
     header('Location: ../view/index.php?error=' . urlencode('Usuario no encontrado'));
     exit;
 }
 
 // Recoger datos del formulario
-$nuevoUsername = isset($_POST['username']) ? trim($_POST['username']) : '';
+$nuevoNombreUsuario = isset($_POST['username']) ? trim($_POST['username']) : '';
 
 // Validaciones
-$errors = [];
+$errores = [];
 
 // Validar nombre de usuario
-if ($nuevoUsername === '') {
-    $errors[] = 'El nombre de usuario es obligatorio.';
-} elseif (strlen($nuevoUsername) < 3 || strlen($nuevoUsername) > 100) {
-    $errors[] = 'El nombre de usuario debe tener entre 3 y 100 caracteres.';
-} elseif ($nuevoUsername !== $usuarioActual['username'] && existeUsername($nuevoUsername, $userId)) {
-    $errors[] = 'El nombre de usuario ya está en uso.';
+if ($nuevoNombreUsuario === '') {
+    $errores[] = 'El nombre de usuario es obligatorio.';
+} elseif (strlen($nuevoNombreUsuario) < 3 || strlen($nuevoNombreUsuario) > 100) {
+    $errores[] = 'El nombre de usuario debe tener entre 3 y 100 caracteres.';
+} elseif ($nuevoNombreUsuario !== $datosUsuarioActual['username'] && existeUsername($nuevoNombreUsuario, $idUsuario)) {
+    $errores[] = 'El nombre de usuario ya está en uso.';
 }
 
 // Procesar imagen de perfil si se subió
@@ -55,18 +55,18 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPL
     finfo_close($finfo);
     
     if (!in_array($tipoArchivo, $tiposPermitidos)) {
-        $errors[] = 'Solo se permiten imágenes JPG, PNG o GIF.';
+        $errores[] = 'Solo se permiten imágenes JPG, PNG o GIF.';
     }
     
     // Validar tamaño (5MB máximo)
     if ($archivo['size'] > 5 * 1024 * 1024) {
-        $errors[] = 'La imagen no puede superar los 5MB.';
+        $errores[] = 'La imagen no puede superar los 5MB.';
     }
     
-    if (empty($errors)) {
+    if (empty($errores)) {
         // Generar nombre único para la imagen
         $extension = pathinfo($archivo['name'], PATHINFO_EXTENSION);
-        $nombreArchivo = 'user_' . $userId . '_' . time() . '.' . $extension;
+        $nombreArchivo = 'user_' . $idUsuario . '_' . time() . '.' . $extension;
         $rutaDestino = __DIR__ . '/../assets/img/userImg/' . $nombreArchivo;
         
         // Mover archivo
@@ -75,32 +75,32 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPL
             $imagenSubida = true;
             
             // Eliminar imagen anterior si no es la por defecto
-            $imagenAnterior = $usuarioActual['profile_image'];
-            if ($imagenAnterior !== 'userDefaultImg.jpg' && $imagenAnterior !== $nombreArchivo) {
-                $rutaAnterior = __DIR__ . '/../assets/img/userImg/' . $imagenAnterior;
-                if (file_exists($rutaAnterior)) {
-                    unlink($rutaAnterior);
+            $imagenPrevia = $datosUsuarioActual['profile_image'];
+            if ($imagenPrevia !== 'userDefaultImg.jpg' && $imagenPrevia !== $nombreArchivo) {
+                $rutaPrevia = __DIR__ . '/../assets/img/userImg/' . $imagenPrevia;
+                if (file_exists($rutaPrevia)) {
+                    unlink($rutaPrevia);
                 }
             }
         } else {
-            $errors[] = 'Error al subir la imagen. Inténtalo de nuevo.';
+            $errores[] = 'Error al subir la imagen. Inténtalo de nuevo.';
         }
     }
 }
 
 // Mostrar errores si existen
-if (!empty($errors)) {
-    $qs = http_build_query(['error' => implode(' ', $errors)]);
+if (!empty($errores)) {
+    $qs = http_build_query(['error' => implode(' ', $errores)]);
     header('Location: ../view/modificarPerfil.vista.php?' . $qs);
     exit;
 }
 
 // Actualizar perfil en la base de datos
-$resultado = actualizarPerfil($userId, $nuevoUsername, $nuevaImagen);
+$resultado = actualizarPerfil($idUsuario, $nuevoNombreUsuario, $nuevaImagen);
 
 if ($resultado) {
     // Actualizar datos en la sesión
-    $_SESSION['usuario']['username'] = $nuevoUsername;
+    $_SESSION['usuario']['username'] = $nuevoNombreUsuario;
     
     // Mensaje de éxito
     $mensaje = 'Perfil actualizado correctamente.';
@@ -108,7 +108,7 @@ if ($resultado) {
         $mensaje .= ' Tu foto de perfil ha sido cambiada.';
     }
     
-    header('Location: ../view/perfilUsuario.vista.php?id=' . $userId . '&ok=' . urlencode($mensaje));
+    header('Location: ../view/perfilUsuario.vista.php?id=' . $idUsuario . '&ok=' . urlencode($mensaje));
     exit;
 }
 

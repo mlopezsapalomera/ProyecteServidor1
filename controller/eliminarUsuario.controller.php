@@ -17,42 +17,42 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
     exit;
 }
 
-$userId = (int)$_GET['id'];
+$idUsuario = (int)$_GET['id'];
 
 // Validar que el ID sea válido
-if ($userId <= 0) {
+if ($idUsuario <= 0) {
     header('Location: ../view/adminPanel.vista.php?error=' . urlencode('ID de usuario inválido.'));
     exit;
 }
 
 // Obtener información del usuario a eliminar
-$usuarioAEliminar = obtenerUsuarioPorId($userId);
+$datosUsuarioEliminar = obtenerUsuarioPorId($idUsuario);
 
-if (!$usuarioAEliminar) {
+if (!$datosUsuarioEliminar) {
     header('Location: ../view/adminPanel.vista.php?error=' . urlencode('Usuario no encontrado.'));
     exit;
 }
 
 // Verificar que no sea un administrador
-if ($usuarioAEliminar['role'] === 'admin') {
+if ($datosUsuarioEliminar['role'] === 'admin') {
     header('Location: ../view/adminPanel.vista.php?error=' . urlencode('No se pueden eliminar usuarios administradores.'));
     exit;
 }
 
 // Verificar que no se esté intentando eliminar a sí mismo
-if ($userId === idUsuarioActual()) {
+if ($idUsuario === idUsuarioActual()) {
     header('Location: ../view/adminPanel.vista.php?error=' . urlencode('No puedes eliminarte a ti mismo.'));
     exit;
 }
 
 // Contar publicaciones antes de eliminar
-$numPublicaciones = contarPublicacionesUsuario($userId);
+$numPublicaciones = contarPublicacionesUsuario($idUsuario);
 
 // Eliminar usuario y sus publicaciones
-$resultado = eliminarUsuario($userId);
+$resultado = eliminarUsuario($idUsuario);
 
 if ($resultado) {
-    $mensaje = "Usuario '{$usuarioAEliminar['username']}' eliminado correctamente.";
+    $mensaje = "Usuario '{$datosUsuarioEliminar['username']}' eliminado correctamente.";
     if ($numPublicaciones > 0) {
         $mensaje .= " Se eliminaron también {$numPublicaciones} publicaciones.";
     }
