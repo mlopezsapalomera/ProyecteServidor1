@@ -4,6 +4,7 @@ require_once __DIR__ . '/../security/auth.php';
 function e($s){return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');}
 $error = isset($_GET['error']) ? $_GET['error'] : null;
 $usuariPrefill = isset($_GET['usuari']) ? $_GET['usuari'] : '';
+$errors = []; // Array para errores de captcha
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -52,15 +53,13 @@ $usuariPrefill = isset($_GET['usuari']) ? $_GET['usuari'] : '';
           <input id="password" name="password" type="password" required>
         </div>
         <?php
-        if (isset($_SESSION['intentos_login']) && $_SESSION['intentos_login'] >= 3):
+        if (isset($_SESSION["loginTries"]) && $_SESSION["loginTries"] >= 3)
+          echo '<div class="g-recaptcha" data-sitekey="' . RECAPTCHA_SITE_KEY . '"></div>';
+        if (isset($errors['captcha'])) {
+          $error = $errors['captcha'];
+          echo "<div class='alert error' style='margin-top: 8px;'>❌ $error</div>";
+        }
         ?>
-          <div class="form-group">
-            <div class="g-recaptcha" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
-            <?php if (isset($_GET['captcha_error'])): ?>
-              <div class="alert error" style="margin-top: 8px;">❌ <?= e($_GET['captcha_error']) ?></div>
-            <?php endif; ?>
-          </div>
-        <?php endif; ?>
 
         <div class="actions form">
           <button class="btn primary" type="submit">Iniciar sesión</button>

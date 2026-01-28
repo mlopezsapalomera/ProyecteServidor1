@@ -16,8 +16,8 @@ if (!defined('DB_PASS')) {
 if (!defined('RECAPTCHA_SITE_KEY')) {
     define('RECAPTCHA_SITE_KEY', '6LfM2VUsAAAAAO3Tnq6LryZmAfOpmEHxPLzIxjBn');
 }
-if (!defined('RECAPTCHA_SECRET_KEY')) {
-    define('RECAPTCHA_SECRET_KEY', '6LfM2VUsAAAAACfI3SXD2DFPee_aROxGQ0G5X6Rp');
+if (!defined('RECAPTCHA_KEY')) {
+    define('RECAPTCHA_KEY', '6LfM2VUsAAAAACfI3SXD2DFPee_aROxGQ0G5X6Rp');
 }
 
 ?>

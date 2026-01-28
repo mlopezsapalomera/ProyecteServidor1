@@ -6,14 +6,17 @@ require_once __DIR__ . '/../model/user.php';
 require_once __DIR__ . '/../env.php';
 require_once __DIR__ . '/../security/auth.php';
 
+// Array global para errores de captcha
+$errors = [];
+
 // Validar método de la petición
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ../view/login.vista.php');
     exit;
 }
 
-if (!isset($_SESSION['intentos_login'])) {
-    $_SESSION['intentos_login'] = 0;
+if (!isset($_SESSION['loginTries'])) {
+    $_SESSION['loginTries'] = 0;
 }
 
 // Recoger datos del formulario
@@ -27,12 +30,10 @@ if ($campUsuari === '' || $contrasenya === '') {
 }
 
 // Validar reCAPTCHA si hay 3 o más intentos fallidos
-if ($_SESSION['intentos_login'] >= 3) {
-    if (!validarRecaptcha()) {
-        $_SESSION['intentos_login']++;
-        header('Location: ../view/login.vista.php?error=' . urlencode('Usuario o contraseña incorrectos.') . 
-               '&captcha_error=' . urlencode('Debes completar el reCAPTCHA correctamente.') . 
-               '&usuari=' . urlencode($campUsuari));
+if ($_SESSION['loginTries'] >= 3) {
+    if (!isCaptchaValid()) {
+        $_SESSION['loginTries']++;
+        header('Location: ../view/login.vista.php?error=' . urlencode('Usuario o contraseña incorrectos.') . '&usuari=' . urlencode($campUsuari));
         exit;
     }
 }
@@ -41,55 +42,39 @@ if ($_SESSION['intentos_login'] >= 3) {
 $usuari = verificarCredencialesUsuario($campUsuari, $contrasenya);
 if ($usuari) {
     // Resetear contador de intentos en login exitoso
-    $_SESSION['intentos_login'] = 0;
+    $_SESSION['loginTries'] = 0;
     iniciarSesion($usuari);
     header('Location: ../view/index.php?ok=' . urlencode('Has iniciado sesión.'));
     exit;
 }
 
 // Credenciales incorrectas - incrementar contador
-$_SESSION['intentos_login']++;
+$_SESSION['loginTries']++;
 header('Location: ../view/login.vista.php?error=' . urlencode('Usuario o contraseña incorrectos.') . '&usuari=' . urlencode($campUsuari));
 exit;
 
 /**
- * Valida si el reCAPTCHA ha sido completado correctamente
- * @return bool true si es válido, false si no
+ * Comprova si el captcha ha sigut completat i completa l'array global d'errors si n'hi ha
+ * @return boolean si el captcha és vàlid o no
  */
-function validarRecaptcha() {
-    // Si no hay respuesta de captcha, es inválido
-    if (!isset($_POST['g-recaptcha-response']) || empty($_POST['g-recaptcha-response'])) {
+function isCaptchaValid() {
+    global $errors;
+
+    // Verificar la resposta de l'API reCAPTCHA 
+    if (isset($_POST['g-recaptcha-response']) && !empty($_POST['g-recaptcha-response'])) {
+        $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . RECAPTCHA_KEY . '&response=' . $_POST['g-recaptcha-response']);
+
+        // Decodificar JSON data de la resposta de l'API
+        $responseData = json_decode($verifyResponse);
+
+        if (!$responseData->success) {
+            $errors['captcha'] = "Wrong captcha";
+            return false;
+        }
+    } else {
+        $errors['captcha'] = "You must check the captcha.";
         return false;
     }
     
-    $recaptchaResponse = $_POST['g-recaptcha-response'];
-    
-    // Hacer petición a la API de Google para verificar
-    $url = 'https://www.google.com/recaptcha/api/siteverify';
-    $data = [
-        'secret' => RECAPTCHA_SECRET_KEY,
-        'response' => $recaptchaResponse,
-        'remoteip' => $_SERVER['REMOTE_ADDR']
-    ];
-    
-    // Usar file_get_contents con stream context
-    $options = [
-        'http' => [
-            'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
-            'method'  => 'POST',
-            'content' => http_build_query($data)
-        ]
-    ];
-    $context  = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
-    
-    if ($response === false) {
-        // Error en la petición
-        return false;
-    }
-    
-    $responseData = json_decode($response);
-    
-    // Retornar si fue exitoso
-    return $responseData->success === true;
+    return true;
 }
