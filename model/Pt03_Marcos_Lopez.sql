@@ -30,6 +30,20 @@ CREATE TABLE `users` (
   UNIQUE KEY `uq_users_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Tabla de tokens para "Recordar sesión" (Remember Me)
+CREATE TABLE `remember_tokens` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `token_hash` VARCHAR(255) NOT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_token_hash` (`token_hash`),
+  INDEX `idx_user_id` (`user_id`),
+  INDEX `idx_expires_at` (`expires_at`),
+  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insertar usuarios de prueba
 INSERT INTO `users` (`username`, `email`, `password_hash`, `profile_image`, `role`) VALUES
 ('ash_ketchum', 'ash@pokemon.com', '$2y$10$rX5YqJ8vQp9k1LZt9MqDKehDq4N8WYzQv6C5L3D9xRnP2K8mJfH7G', 'userDefaultImg.jpg', 'user'),

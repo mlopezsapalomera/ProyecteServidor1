@@ -2559,6 +2559,69 @@ img.post-avatar {
     transform: scale(0.98);
 }
 
+/* ===== CHECKBOX PERSONALIZADO "RECORDARME" ===== */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+    padding: 8px 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255, 0, 110, 0.3);
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.checkbox-label input[type="checkbox"]:hover {
+    border-color: #ff006e;
+    box-shadow: 0 0 0 4px rgba(255, 0, 110, 0.08);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+    background: linear-gradient(135deg, #ff006e 0%, #ffbe0b 100%);
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(255, 0, 110, 0.3);
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: 900;
+    font-size: 14px;
+}
+
+.checkbox-label span {
+    color: #555;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.checkbox-label:hover span {
+    color: #ff006e;
+}
+
+.checkbox-label input[type="checkbox"]:focus {
+    outline: none;
+    border-color: #ff006e;
+    box-shadow: 0 0 0 4px rgba(255, 0, 110, 0.15);
+}
+
 /* Responsive del modal */
 @media (max-width: 768px) {
     .modal-content {
