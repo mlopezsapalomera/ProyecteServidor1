@@ -28,7 +28,37 @@ function mantenerSesion() {
     $_SESSION['last_activity'] = time();
 }
 
+// Intentar login automático con cookie "Remember Me"
+function intentarLoginAutomatico() {
+    // Si ya hay sesión activa, no hacer nada
+    if (estaIdentificado()) {
+        return true;
+    }
+    
+    // Verificar si existe cookie de "Recordarme"
+    if (!isset($_COOKIE['remember_token'])) {
+        return false;
+    }
+    
+    // Cargar funciones de usuario
+    require_once __DIR__ . '/../model/user.php';
+    
+    // Verificar el token
+    $usuario = verificarRememberToken($_COOKIE['remember_token']);
+    
+    if ($usuario) {
+        // Token válido: iniciar sesión automáticamente
+        iniciarSesion($usuario);
+        return true;
+    } else {
+        // Token inválido o expirado: eliminar cookie
+        setcookie('remember_token', '', time() - 3600, '/');
+        return false;
+    }
+}
+
 mantenerSesion();
+intentarLoginAutomatico(); // Intentar login automático si no hay sesión
 
 // Iniciar sesión
 function iniciarSesion(array $usuario) {

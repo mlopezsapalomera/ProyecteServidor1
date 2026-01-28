@@ -50,6 +50,13 @@ $usuariPrefill = isset($_GET['usuari']) ? $_GET['usuari'] : '';
           <input id="password" name="password" type="password" required>
         </div>
 
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="remember_me" id="remember_me">
+            <span>Recordarme durante 30 días</span>
+          </label>
+        </div>
+
         <div class="actions form">
           <button class="btn primary" type="submit">Iniciar sesión</button>
           <a class="btn secondary" href="view/index.php">Volver</a>

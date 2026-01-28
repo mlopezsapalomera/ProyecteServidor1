@@ -192,3 +192,128 @@ function buscarUsuarios($query, $limit = 10) {
     $stmt->execute();
     return $stmt->fetchAll();
 }
+
+// ===== FUNCIONES PARA REMEMBER ME =====
+
+/**
+ * Crear un token de "Recordarme" para el usuario
+ * @param int $userId ID del usuario
+ * @param int $dias Días de validez del token (default: 30)
+ * @return string|false Token generado o false si falla
+ */
+function crearRememberToken($userId, $dias = 30) {
+    global $nom_variable_connexio;
+    
+    // Generar token aleatorio seguro (64 bytes = 128 caracteres hex)
+    $token = bin2hex(random_bytes(64));
+    
+    // Hash del token para guardar en BD (seguridad: no guardar token plano)
+    $tokenHash = hash('sha256', $token);
+    
+    // Calcular fecha de expiración
+    $expiresAt = date('Y-m-d H:i:s', time() + ($dias * 24 * 60 * 60));
+    
+    // Insertar en BD
+    $sql = "INSERT INTO remember_tokens (user_id, token_hash, expires_at) 
+            VALUES (:user_id, :token_hash, :expires_at)";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $ok = $stmt->execute([
+        ':user_id' => (int)$userId,
+        ':token_hash' => $tokenHash,
+        ':expires_at' => $expiresAt
+    ]);
+    
+    return $ok ? $token : false;
+}
+
+/**
+ * Verificar un token de "Recordarme"
+ * @param string $token Token a verificar
+ * @return array|false Datos del usuario si el token es válido, false si no
+ */
+function verificarRememberToken($token) {
+    global $nom_variable_connexio;
+    
+    if (empty($token)) return false;
+    
+    // Hash del token para comparar
+    $tokenHash = hash('sha256', $token);
+    
+    // Buscar token válido (no expirado)
+    $sql = "SELECT rt.user_id, u.* 
+            FROM remember_tokens rt
+            INNER JOIN users u ON rt.user_id = u.id
+            WHERE rt.token_hash = :token_hash 
+            AND rt.expires_at > NOW()
+            LIMIT 1";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':token_hash' => $tokenHash]);
+    $result = $stmt->fetch();
+    
+    if ($result) {
+        // Token válido: actualizar fecha de expiración (renovar por 30 días más)
+        renovarRememberToken($tokenHash);
+        return $result;
+    }
+    
+    return false;
+}
+
+/**
+ * Renovar la fecha de expiración de un token
+ * @param string $tokenHash Hash del token
+ * @param int $dias Días adicionales (default: 30)
+ */
+function renovarRememberToken($tokenHash, $dias = 30) {
+    global $nom_variable_connexio;
+    
+    $expiresAt = date('Y-m-d H:i:s', time() + ($dias * 24 * 60 * 60));
+    
+    $sql = "UPDATE remember_tokens 
+            SET expires_at = :expires_at 
+            WHERE token_hash = :token_hash";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([
+        ':expires_at' => $expiresAt,
+        ':token_hash' => $tokenHash
+    ]);
+}
+
+/**
+ * Eliminar un token específico de "Recordarme"
+ * @param string $token Token a eliminar
+ */
+function eliminarRememberToken($token) {
+    global $nom_variable_connexio;
+    
+    if (empty($token)) return;
+    
+    $tokenHash = hash('sha256', $token);
+    
+    $sql = "DELETE FROM remember_tokens WHERE token_hash = :token_hash";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':token_hash' => $tokenHash]);
+}
+
+/**
+ * Eliminar todos los tokens de un usuario
+ * @param int $userId ID del usuario
+ */
+function eliminarTodosRememberTokens($userId) {
+    global $nom_variable_connexio;
+    
+    $sql = "DELETE FROM remember_tokens WHERE user_id = :user_id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':user_id' => (int)$userId]);
+}
+
+/**
+ * Limpiar tokens expirados (mantenimiento)
+ */
+function limpiarTokensExpirados() {
+    global $nom_variable_connexio;
+    
+    $sql = "DELETE FROM remember_tokens WHERE expires_at < NOW()";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute();
+}
