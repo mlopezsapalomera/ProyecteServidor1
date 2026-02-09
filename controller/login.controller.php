@@ -47,13 +47,13 @@ if ($usuari) {
     
     // Si el usuario marcó "Recordarme", crear token y cookie
     if ($recordarme) {
-        $token = crearRememberToken($usuari['id'], 30); // Token válido por 30 días
+        $token = crearRememberToken($usuari['id'], 1); // Token válido por 1 minuto (para pruebas)
         if ($token) {
-            // Guardar token en cookie (30 días = 2592000 segundos)
+            // Guardar token en cookie (1 minuto = 60 segundos)
             setcookie(
                 'remember_token',
                 $token,
-                time() + (30 * 24 * 60 * 60),
+                time() + 60,
                 '/',
                 '',
                 false, // No requerir HTTPS (cambiar a true en producción)

@@ -197,6 +197,11 @@ function buscarUsuarios($query, $limit = 10) {
 function crearRemembertoken($userId, $dias = 30) {
     global $nom_variable_connexio;
 
+    // Verificar que la conexión esté disponible
+    if (!isset($nom_variable_connexio) || $nom_variable_connexio === null) {
+        $nom_variable_connexio = require __DIR__ . '/db.php';
+    }
+
     // Generar token aleatorio
     $token = bin2hex(random_bytes(64));
 
@@ -222,6 +227,11 @@ function verificarRememberToken($token) {
     global $nom_variable_connexio;
     
     if (empty($token)) return false;
+    
+    // Verificar que la conexión esté disponible
+    if (!isset($nom_variable_connexio) || $nom_variable_connexio === null) {
+        $nom_variable_connexio = require __DIR__ . '/db.php';
+    }
     
     // Hash del token para comparar
     $tokenHash = hash('sha256', $token);
@@ -249,6 +259,11 @@ function verificarRememberToken($token) {
 function renovarRememberToken($tokenHash, $dias = 30) {
     global $nom_variable_connexio;
     
+    // Verificar que la conexión esté disponible
+    if (!isset($nom_variable_connexio) || $nom_variable_connexio === null) {
+        $nom_variable_connexio = require __DIR__ . '/db.php';
+    }
+    
     $expiresAt = date('Y-m-d H:i:s', time() + ($dias * 24 * 60 * 60));
     
     $sql = "UPDATE remember_tokens 
@@ -267,6 +282,11 @@ function eliminarRememberToken($token) {
     
     if (empty($token)) return;
     
+    // Verificar que la conexión esté disponible
+    if (!isset($nom_variable_connexio) || $nom_variable_connexio === null) {
+        $nom_variable_connexio = require __DIR__ . '/db.php';
+    }
+    
     $tokenHash = hash('sha256', $token);
     
     $sql = "DELETE FROM remember_tokens WHERE token_hash = :token_hash";
@@ -278,6 +298,11 @@ function eliminarRememberToken($token) {
 function eliminarTodosRememberTokens($userId) {
     global $nom_variable_connexio;
     
+    // Verificar que la conexión esté disponible
+    if (!isset($nom_variable_connexio) || $nom_variable_connexio === null) {
+        $nom_variable_connexio = require __DIR__ . '/db.php';
+    }
+    
     $sql = "DELETE FROM remember_tokens WHERE user_id = :user_id";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->execute([':user_id' => (int)$userId]);
@@ -286,6 +311,11 @@ function eliminarTodosRememberTokens($userId) {
 
 function limpiarTokensExpirados() {
     global $nom_variable_connexio;
+    
+    // Verificar que la conexión esté disponible
+    if (!isset($nom_variable_connexio) || $nom_variable_connexio === null) {
+        $nom_variable_connexio = require __DIR__ . '/db.php';
+    }
     
     $sql = "DELETE FROM remember_tokens WHERE expires_at < NOW()";
     $stmt = $nom_variable_connexio->prepare($sql);
