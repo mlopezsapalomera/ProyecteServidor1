@@ -3,6 +3,7 @@ require_once __DIR__ . '/../env.php';
 require_once __DIR__ . '/../security/auth.php';
 function e($s){return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');}
 $error = isset($_GET['error']) ? $_GET['error'] : null;
+$success = isset($_GET['success']) ? $_GET['success'] : null;
 $captcha_error = isset($_GET['captcha_error']) ? $_GET['captcha_error'] : null;
 $usuariPrefill = isset($_GET['usuari']) ? $_GET['usuari'] : '';
 ?>
@@ -38,6 +39,10 @@ $usuariPrefill = isset($_GET['usuari']) ? $_GET['usuari'] : '';
       <p>Introduce tu usuario o email y contraseña.</p>
     </div>
 
+    <?php if ($success): ?>
+      <div class="alert success">✅ <?= e($success) ?></div>
+    <?php endif; ?>
+
     <?php if ($error): ?>
       <div class="alert error">❌ <?= e($error) ?></div>
     <?php endif; ?>
@@ -51,6 +56,9 @@ $usuariPrefill = isset($_GET['usuari']) ? $_GET['usuari'] : '';
         <div class="form-group">
           <label for="password">Contraseña *</label>
           <input id="password" name="password" type="password" required>
+          <div style="text-align: right; margin-top: 8px;">
+            <a href="view/recuperarContrasena.vista.php" style="font-size: 0.9em; color: #4a90e2; text-decoration: none;">¿No recuerdas tu contraseña?</a>
+          </div>
         </div>
 
         <div class="form-group">

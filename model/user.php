@@ -99,6 +99,22 @@ function existeUsername($username, $excludeId = null) {
     return $row && $row['total'] > 0;
 }
 
+// Verificar si el correo existe (excluyendo un ID específico)
+function existeCorreo($email, $excludeId = null) {
+    global $nom_variable_connexio;
+    if ($excludeId) {
+        $sql = "SELECT COUNT(*) as total FROM users WHERE email = :email AND id != :id";
+        $stmt = $nom_variable_connexio->prepare($sql);
+        $stmt->execute([':email' => $email, ':id' => (int)$excludeId]);
+    } else {
+        $sql = "SELECT COUNT(*) as total FROM users WHERE email = :email";
+        $stmt = $nom_variable_connexio->prepare($sql);
+        $stmt->execute([':email' => $email]);
+    }
+    $row = $stmt->fetch();
+    return $row && $row['total'] > 0;
+}
+
 // Actualizar contraseña de usuario
 function actualizarContrasena($userId, $nuevaPasswordHash) {
     global $nom_variable_connexio;
@@ -320,4 +336,81 @@ function limpiarTokensExpirados() {
     $sql = "DELETE FROM remember_tokens WHERE expires_at < NOW()";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->execute();
+}
+
+// ========== FUNCIONES PARA RECUPERACIÓN DE CONTRASEÑA ==========
+
+// Generar token de recuperación de contraseña (expira en 5 minutos)
+function generarTokenRecuperacion($email) {
+    global $nom_variable_connexio;
+    
+    // Verificar que el correo existe
+    $user = obtenerUsuarioPorEmail($email);
+    if (!$user) {
+        return false;
+    }
+    
+    // Generar token aleatorio seguro
+    $token = bin2hex(random_bytes(32));
+    
+    // Calcular tiempo de expiración (5 minutos)
+    $expira = date('Y-m-d H:i:s', time() + (5 * 60));
+    
+    // Guardar token en la base de datos
+    $sql = "UPDATE users SET reset_token = :token, reset_token_expira = :expira WHERE email = :email";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $ok = $stmt->execute([
+        ':token' => $token,
+        ':expira' => $expira,
+        ':email' => $email
+    ]);
+    
+    return $ok ? $token : false;
+}
+
+// Verificar token de recuperación
+function verificarTokenRecuperacion($token) {
+    global $nom_variable_connexio;
+    
+    if (empty($token)) {
+        return false;
+    }
+    
+    // Buscar usuario con el token válido (no expirado)
+    $sql = "SELECT * FROM users WHERE reset_token = :token AND reset_token_expira > NOW() LIMIT 1";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':token' => $token]);
+    
+    return $stmt->fetch();
+}
+
+// Resetear contraseña con token
+function resetearContrasenaConToken($token, $nuevaPassword) {
+    global $nom_variable_connexio;
+    
+    // Verificar que el token es válido
+    $user = verificarTokenRecuperacion($token);
+    if (!$user) {
+        return false;
+    }
+    
+    // Hash de la nueva contraseña
+    $passwordHash = password_hash($nuevaPassword, PASSWORD_DEFAULT);
+    
+    // Actualizar contraseña y limpiar token
+    $sql = "UPDATE users SET password_hash = :password_hash, reset_token = NULL, reset_token_expira = NULL WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    return $stmt->execute([
+        ':password_hash' => $passwordHash,
+        ':id' => (int)$user['id']
+    ]);
+}
+
+// Limpiar token de recuperación (usado o cancelado)
+function limpiarTokenRecuperacion($userId) {
+    global $nom_variable_connexio;
+    
+    $sql = "UPDATE users SET reset_token = NULL, reset_token_expira = NULL WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':id' => (int)$userId]);
 }
