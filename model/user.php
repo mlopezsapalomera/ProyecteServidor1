@@ -440,3 +440,106 @@ function limpiarTokenRecuperacion($userId) {
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->execute([':id' => (int)$userId]);
 }
+
+// ==================== FUNCIONES OAUTH ====================
+
+/**
+ * Crear usuario con OAuth (sin contraseña)
+ */
+function crearUsuarioOAuth($username, $email, $provider, $oauthUid, $oauthToken, $profileImage = 'userDefaultImg.jpg') {
+    global $nom_variable_connexio;
+    
+    $sql = "INSERT INTO users (username, email, password_hash, oauth_provider, oauth_uid, oauth_token, profile_image) 
+            VALUES (:username, :email, NULL, :provider, :oauth_uid, :oauth_token, :profile_image)";
+    
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $resultado = $stmt->execute([
+        ':username' => $username,
+        ':email' => $email,
+        ':provider' => $provider,
+        ':oauth_uid' => $oauthUid,
+        ':oauth_token' => $oauthToken,
+        ':profile_image' => $profileImage
+    ]);
+    
+    if ($resultado) {
+        return (int)$nom_variable_connexio->lastInsertId();
+    }
+    
+    return false;
+}
+
+/**
+ * Obtener usuario por proveedor OAuth y UID
+ */
+function obtenerUsuarioPorOAuthUID($provider, $oauthUid) {
+    global $nom_variable_connexio;
+    
+    $sql = "SELECT * FROM users WHERE oauth_provider = :provider AND oauth_uid = :oauth_uid LIMIT 1";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([
+        ':provider' => $provider,
+        ':oauth_uid' => $oauthUid
+    ]);
+    
+    return $stmt->fetch();
+}
+
+/**
+ * Vincular cuenta OAuth a un usuario existente
+ */
+function vincularOAuthAUsuario($userId, $provider, $oauthUid, $oauthToken) {
+    global $nom_variable_connexio;
+    
+    $sql = "UPDATE users SET oauth_provider = :provider, oauth_uid = :oauth_uid, oauth_token = :oauth_token 
+            WHERE id = :id";
+    
+    $stmt = $nom_variable_connexio->prepare($sql);
+    return $stmt->execute([
+        ':provider' => $provider,
+        ':oauth_uid' => $oauthUid,
+        ':oauth_token' => $oauthToken,
+        ':id' => (int)$userId
+    ]);
+}
+
+/**
+ * Actualizar token OAuth de un usuario
+ */
+function actualizarOAuthToken($userId, $oauthToken) {
+    global $nom_variable_connexio;
+    
+    $sql = "UPDATE users SET oauth_token = :oauth_token WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    
+    return $stmt->execute([
+        ':oauth_token' => $oauthToken,
+        ':id' => (int)$userId
+    ]);
+}
+
+/**
+ * Desvincular cuenta OAuth de un usuario
+ */
+function desvincularOAuth($userId) {
+    global $nom_variable_connexio;
+    
+    $sql = "UPDATE users SET oauth_provider = NULL, oauth_uid = NULL, oauth_token = NULL WHERE id = :id";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    
+    return $stmt->execute([':id' => (int)$userId]);
+}
+
+/**
+ * Verificar si un usuario tiene OAuth configurado
+ */
+function tieneOAuthConfigurado($userId) {
+    global $nom_variable_connexio;
+    
+    $sql = "SELECT oauth_provider FROM users WHERE id = :id LIMIT 1";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':id' => (int)$userId]);
+    
+    $user = $stmt->fetch();
+    return !empty($user['oauth_provider']);
+}

@@ -1,0 +1,41 @@
+# Archivos sensibles - NO SUBIR A GIT
+env.php
+
+# Composer
+vendor/
+composer.lock
+composer.phar
+composer-setup.php
+
+# Logs
+logs/
+*.log
+hybridauth.log
+
+# Archivos temporales
+*.tmp
+*.cache
+*.swp
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Uploads - Imágenes de usuario
+assets/img/imgProfileuser/*
+!assets/img/imgProfileuser/.gitkeep
+assets/img/userImg/*
+!assets/img/userImg/.gitkeep
+
+# Backups
+*.backup
+*.bak
+*.sql.gz

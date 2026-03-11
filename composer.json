@@ -1,0 +1,14 @@
+{
+    "name": "marcos/proyecte-servidor",
+    "description": "Proyecto servidor con autenticación OAuth",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "hybridauth/hybridauth": "^3.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    }
+}

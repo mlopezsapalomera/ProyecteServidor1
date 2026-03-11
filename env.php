@@ -40,4 +40,17 @@ if (!defined('MAIL_FROM_NAME')) {
     define('MAIL_FROM_NAME', 'PokéNet Social'); // Nombre del remitente
 }
 
+// Configuración Google OAuth 2.0
+// INSTRUCCIONES: Obtener credenciales en https://console.cloud.google.com/
+// 1. Crear un proyecto
+// 2. Habilitar Google+ API
+// 3. Crear credenciales OAuth 2.0 Client ID
+// 4. Añadir URI de redirección: http://localhost/ProyecteServidor1/controller/oauth.controller.php
+if (!defined('GOOGLE_CLIENT_ID')) {
+    define('GOOGLE_CLIENT_ID', 'TU_GOOGLE_CLIENT_ID_AQUI');
+}
+if (!defined('GOOGLE_CLIENT_SECRET')) {
+    define('GOOGLE_CLIENT_SECRET', 'TU_GOOGLE_CLIENT_SECRET_AQUI');
+}
+
 ?>

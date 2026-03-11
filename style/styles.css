@@ -2668,3 +2668,120 @@ img.post-avatar {
         right: 12px;
     }
 }
+
+/* ==================== ESTILOS OAUTH ==================== */
+
+/* Separador OAuth */
+.oauth-separator {
+    margin: 30px 0 20px;
+    text-align: center;
+    position: relative;
+}
+
+.oauth-separator::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #e0e0e0 20%, #e0e0e0 80%, transparent);
+}
+
+.oauth-separator span {
+    position: relative;
+    background: white;
+    padding: 0 20px;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+    z-index: 1;
+}
+
+/* Contenedor de botones OAuth */
+.oauth-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* Botón OAuth base */
+.btn-oauth {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 24px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    background: white;
+    color: #333;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-oauth:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border-color: #d0d0d0;
+}
+
+.btn-oauth:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Icono OAuth */
+.oauth-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* Botón Google específico */
+.btn-google {
+    border-color: #4285F4;
+}
+
+.btn-google:hover {
+    background: #f8fbff;
+    border-color: #4285F4;
+    box-shadow: 0 4px 16px rgba(66, 133, 244, 0.2);
+}
+
+/* Botón Facebook específico */
+.btn-facebook {
+    border-color: #1877F2;
+}
+
+.btn-facebook:hover {
+    background: #f0f6ff;
+    border-color: #1877F2;
+    box-shadow: 0 4px 16px rgba(24, 119, 242, 0.2);
+}
+
+/* Responsivo OAuth */
+@media (max-width: 768px) {
+    .oauth-buttons {
+        gap: 10px;
+    }
+    
+    .btn-oauth {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .oauth-icon {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .oauth-separator {
+        margin: 20px 0 15px;
+    }
+}
