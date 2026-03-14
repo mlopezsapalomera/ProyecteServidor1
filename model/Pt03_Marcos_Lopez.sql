@@ -21,13 +21,20 @@ CREATE TABLE `users` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(100) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
-  `password_hash` VARCHAR(255) NOT NULL,
+  `password_hash` VARCHAR(255) DEFAULT NULL,
+  `oauth_provider` VARCHAR(50) DEFAULT NULL,
+  `oauth_uid` VARCHAR(255) DEFAULT NULL,
+  `oauth_token` TEXT DEFAULT NULL,
+  `reset_token` VARCHAR(255) DEFAULT NULL,
+  `reset_token_expira` DATETIME DEFAULT NULL,
   `profile_image` VARCHAR(255) DEFAULT 'userDefaultImg.jpg',
   `role` VARCHAR(20) DEFAULT 'user',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_users_username` (`username`),
-  UNIQUE KEY `uq_users_email` (`email`)
+  UNIQUE KEY `uq_users_email` (`email`),
+  UNIQUE KEY `uq_oauth` (`oauth_provider`, `oauth_uid`),
+  INDEX `idx_reset_token` (`reset_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de tokens para "Recordar sesión" (Remember Me)

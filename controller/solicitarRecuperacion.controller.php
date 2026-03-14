@@ -1,0 +1,93 @@
+<?php
+
+session_start();
+require_once __DIR__ . '/../env.php';
+require_once __DIR__ . '/../model/user.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
+
+// cargar phpmailer
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+} else {
+    if (file_exists(__DIR__ . '/../PHPMailer/src/PHPMailer.php')) {
+        require __DIR__ . '/../PHPMailer/src/Exception.php';
+        require __DIR__ . '/../PHPMailer/src/PHPMailer.php';
+        require __DIR__ . '/../PHPMailer/src/SMTP.php';
+    } else {
+        die('PHPMailer no instalado');
+    }
+}
+
+if (!isset($_POST['email']) || empty($_POST['email'])) {
+    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode('Introduce tu correo'));
+    exit();
+}
+
+$email = trim($_POST['email']);
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode('El correo no es valido'));
+    exit();
+}
+
+if (!existeCorreo($email)) {
+    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode('Este correo no está registrado'));
+    exit();
+}
+
+$usuario = obtenerUsuarioPorEmail($email);
+
+$token = generarTokenRecuperacion($email);
+if (!$token) {
+    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode('Error al generar token'));
+    exit();
+}
+
+$enlaceRecuperacion = 'http://' . $_SERVER['HTTP_HOST'] . '/ProyecteServidor1/view/resetearContrasena.vista.php?token=' . urlencode($token);
+
+// enviar correo
+try {
+    $mail = new PHPMailer(true);
+    
+    $mail->isSMTP();
+    $mail->Host       = MAIL_HOST;
+    $mail->SMTPAuth   = true;
+    $mail->Username   = MAIL_USERNAME;
+    $mail->Password   = MAIL_PASSWORD;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = MAIL_PORT;
+    $mail->CharSet    = 'UTF-8';
+    
+    $mail->setFrom(MAIL_FROM_EMAIL, MAIL_FROM_NAME);
+    $mail->addAddress($email, $usuario['username']);
+    
+    $mail->isHTML(true);
+    $mail->Subject = 'Recuperar Contraseña';
+    
+    $nombreUsuario = htmlspecialchars($usuario['username']);
+    $mail->Body = '<html><body style="font-family: Arial; padding: 20px;">';
+    $mail->Body .= '<h2>Hola ' . $nombreUsuario . '</h2>';
+    $mail->Body .= '<p>Has solicitado recuperar tu contraseña.</p>';
+    $mail->Body .= '<p>Haz clic aqui para cambiar tu contraseña:</p>';
+    $mail->Body .= '<p><a href="' . $enlaceRecuperacion . '" style="background: #4a90e2; color: white; padding: 10px 20px; text-decoration: none;">Cambiar Contraseña</a></p>';
+    $mail->Body .= '<p>O copia este enlace:</p>';
+    $mail->Body .= '<p style="background: #f0f0f0; padding: 10px;">' . $enlaceRecuperacion . '</p>';
+    $mail->Body .= '<p><strong>Importante:</strong> Este enlace caduca en 5 minutos.</p>';
+    $mail->Body .= '<p>Si no fuiste tu, ignora este correo.</p>';
+    $mail->Body .= '</body></html>';
+    
+    $mail->AltBody = "Hola {$nombreUsuario},\n\nHas solicitado recuperar tu contraseña.\n\nEnlace: {$enlaceRecuperacion}\n\nCaduca en 5 minutos.\n\nSi no fuiste tu, ignora este correo.";
+    
+    $mail->send();
+    
+    header('Location: ../view/recuperarContrasena.vista.php?success=' . urlencode('Se ha mandado un correo con el enlace de recuperación'));
+    exit();
+    
+} catch (Exception $e) {
+    error_log("Error email: {$mail->ErrorInfo}");
+    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode('Error al enviar el correo'));
+    exit();
+}
