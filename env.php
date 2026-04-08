@@ -31,7 +31,7 @@ if (!defined('MAIL_USERNAME')) {
     define('MAIL_USERNAME', 'mxrcol18@gmail.com'); // Tu correo electrónico
 }
 if (!defined('MAIL_PASSWORD')) {
-    define('MAIL_PASSWORD', 'tgbr opqv cchx tysl'); // Contraseña o App Password
+    define('MAIL_PASSWORD', 'mnpd gkyt ugvc ncyh'); // Contraseña o App Password
 }
 if (!defined('MAIL_FROM_EMAIL')) {
     define('MAIL_FROM_EMAIL', 'mxrcol18@gmail.com'); // Correo del remitente

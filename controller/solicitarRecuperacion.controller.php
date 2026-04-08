@@ -4,21 +4,13 @@ session_start();
 require_once __DIR__ . '/../env.php';
 require_once __DIR__ . '/../model/user.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
-
 // cargar phpmailer
-if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    require __DIR__ . '/../vendor/autoload.php';
+if (file_exists(__DIR__ . '/../PHPMailer/src/PHPMailer.php')) {
+    require __DIR__ . '/../PHPMailer/src/Exception.php';
+    require __DIR__ . '/../PHPMailer/src/PHPMailer.php';
+    require __DIR__ . '/../PHPMailer/src/SMTP.php';
 } else {
-    if (file_exists(__DIR__ . '/../PHPMailer/src/PHPMailer.php')) {
-        require __DIR__ . '/../PHPMailer/src/Exception.php';
-        require __DIR__ . '/../PHPMailer/src/PHPMailer.php';
-        require __DIR__ . '/../PHPMailer/src/SMTP.php';
-    } else {
-        die('PHPMailer no instalado');
-    }
+    die('PHPMailer no instalado');
 }
 
 if (!isset($_POST['email']) || empty($_POST['email'])) {
@@ -50,14 +42,14 @@ $enlaceRecuperacion = 'http://' . $_SERVER['HTTP_HOST'] . '/ProyecteServidor1/vi
 
 // enviar correo
 try {
-    $mail = new PHPMailer(true);
+    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
     
     $mail->isSMTP();
     $mail->Host       = MAIL_HOST;
     $mail->SMTPAuth   = true;
     $mail->Username   = MAIL_USERNAME;
     $mail->Password   = MAIL_PASSWORD;
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = MAIL_PORT;
     $mail->CharSet    = 'UTF-8';
     
@@ -86,8 +78,14 @@ try {
     header('Location: ../view/recuperarContrasena.vista.php?success=' . urlencode('Se ha mandado un correo con el enlace de recuperación'));
     exit();
     
+} catch (\PHPMailer\PHPMailer\Exception $e) {
+    $errorMsg = "Error PHPMailer: " . $e->errorMessage();
+    error_log($errorMsg);
+    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode($errorMsg));
+    exit();
 } catch (Exception $e) {
-    error_log("Error email: {$mail->ErrorInfo}");
-    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode('Error al enviar el correo'));
+    $errorMsg = "Error: " . $e->getMessage();
+    error_log($errorMsg);
+    header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode($errorMsg));
     exit();
 }
