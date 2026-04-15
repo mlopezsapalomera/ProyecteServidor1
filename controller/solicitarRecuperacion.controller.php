@@ -1,6 +1,6 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../security/csrf.php';
 require_once __DIR__ . '/../env.php';
 require_once __DIR__ . '/../model/user.php';
 
@@ -17,6 +17,8 @@ if (!isset($_POST['email']) || empty($_POST['email'])) {
     header('Location: ../view/recuperarContrasena.vista.php?error=' . urlencode('Introduce tu correo'));
     exit();
 }
+
+csrfRequireOrRedirect('../view/recuperarContrasena.vista.php');
 
 $email = trim($_POST['email']);
 
@@ -38,7 +40,7 @@ if (!$token) {
     exit();
 }
 
-$enlaceRecuperacion = 'http://' . $_SERVER['HTTP_HOST'] . '/ProyecteServidor1/view/resetearContrasena.vista.php?token=' . urlencode($token);
+$enlaceRecuperacion = 'http://' . $_SERVER['HTTP_HOST'] . '/ProyecteServidor1/controller/resetearContrasenaPage.controller.php?token=' . urlencode($token);
 
 // enviar correo
 try {

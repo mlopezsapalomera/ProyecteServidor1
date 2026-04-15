@@ -13,16 +13,18 @@ if (!estaIdentificado()) {
 
 // Validar método POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../view/modificarPerfil.vista.php');
+    header('Location: ../controller/modificarPerfilPage.controller.php');
     exit;
 }
+
+csrfRequireOrRedirect('../controller/modificarPerfilPage.controller.php');
 
 // Obtener ID del usuario actual
 $idUsuario = idUsuarioActual();
 $datosUsuarioActual = obtenerUsuarioPorId($idUsuario);
 
 if (!$datosUsuarioActual) {
-    header('Location: ../view/index.php?error=' . urlencode('Usuario no encontrado'));
+    header('Location: ../index.php?error=' . urlencode('Usuario no encontrado'));
     exit;
 }
 
@@ -91,7 +93,7 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPL
 // Mostrar errores si existen
 if (!empty($errores)) {
     $qs = http_build_query(['error' => implode(' ', $errores)]);
-    header('Location: ../view/modificarPerfil.vista.php?' . $qs);
+    header('Location: ../controller/modificarPerfilPage.controller.php?' . $qs);
     exit;
 }
 
@@ -108,10 +110,10 @@ if ($resultado) {
         $mensaje .= ' Tu foto de perfil ha sido cambiada.';
     }
     
-    header('Location: ../view/perfilUsuario.vista.php?id=' . $idUsuario . '&ok=' . urlencode($mensaje));
+    header('Location: ../controller/perfilUsuarioPage.controller.php?id=' . $idUsuario . '&ok=' . urlencode($mensaje));
     exit;
 }
 
 // Error al actualizar
-header('Location: ../view/modificarPerfil.vista.php?error=' . urlencode('No se pudo actualizar el perfil.'));
+header('Location: ../controller/modificarPerfilPage.controller.php?error=' . urlencode('No se pudo actualizar el perfil.'));
 exit;

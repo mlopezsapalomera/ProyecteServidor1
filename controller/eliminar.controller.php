@@ -5,9 +5,16 @@
 require_once __DIR__ . '/../model/pokemon.php';
 require_once __DIR__ . '/../security/auth.php';
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ../index.php?error=' . urlencode('Método no permitido.'));
+    exit;
+}
+
+csrfRequireOrRedirect('../index.php');
+
 // Validar parámetro ID
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: ../view/index.php?error=' . urlencode('ID inválido.'));
+if (!isset($_POST['id']) || !is_numeric($_POST['id'])) {
+    header('Location: ../index.php?error=' . urlencode('ID inválido.'));
     exit;
 }
 
@@ -18,16 +25,16 @@ if (!estaIdentificado()) {
 }
 
 // Verificar que el pokémon existe
-$id = (int)$_GET['id'];
+$id = (int)$_POST['id'];
 $pokemon = obtenerPokemonPorId($id);
 if (!$pokemon) {
-    header('Location: ../view/index.php?error=' . urlencode('Registro no encontrado.'));
+    header('Location: ../index.php?error=' . urlencode('Registro no encontrado.'));
     exit;
 }
 
 // Verificar permisos del usuario
 if ((int)$pokemon['user_id'] !== idUsuarioActual()) {
-    header('Location: ../view/index.php?error=' . urlencode('No tienes permiso para eliminar este Pokémon.'));
+    header('Location: ../index.php?error=' . urlencode('No tienes permiso para eliminar este Pokémon.'));
     exit;
 }
 
@@ -35,9 +42,9 @@ if ((int)$pokemon['user_id'] !== idUsuarioActual()) {
 $ok = eliminarPokemon($id);
 
 if ($ok) {
-    header('Location: ../view/index.php?ok=' . urlencode('Pokémon eliminado correctamente'));
+    header('Location: ../index.php?ok=' . urlencode('Pokémon eliminado correctamente'));
     exit;
 }
 
-header('Location: ../view/index.php?error=' . urlencode('No se ha podido eliminar.'));
+header('Location: ../index.php?error=' . urlencode('No se ha podido eliminar.'));
 exit;

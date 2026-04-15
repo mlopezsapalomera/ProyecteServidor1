@@ -1,25 +1,7 @@
 <?php
-require_once __DIR__ . '/../model/user.php';
-require_once __DIR__ . '/../security/auth.php';
-
-// Solo usuarios autenticados pueden editar su perfil
-if (!estaIdentificado()) {
-    header('Location: ../view/login.vista.php');
-    exit;
-}
 
 // Helper para escapar HTML
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
-
-// Obtener datos del usuario actual
-$usuario = obtenerUsuarioPorId(idUsuarioActual());
-if (!$usuario) {
-    header('Location: ../view/index.php?error=' . urlencode('Usuario no encontrado'));
-    exit;
-}
-
-$ok = isset($_GET['ok']) ? $_GET['ok'] : null;
-$error = isset($_GET['error']) ? $_GET['error'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -37,7 +19,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         <div class="navbar-container">
             <a href="index.php" class="navbar-brand" style="text-decoration: none; color: inherit;">🌟 PokéNet</a>
             <div class="navbar-actions">
-                <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
+                <a href="controller/perfilUsuarioPage.controller.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
                     <?= e($usuario['username']) ?>
                 </a>
                 <a href="controller/logout.controller.php" class="nav-btn">Cerrar sesión</a>
@@ -47,7 +29,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
 
     <div class="main-wrapper">
         <div class="sidebar-left">
-            <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="btn-capturar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <a href="controller/perfilUsuarioPage.controller.php?id=<?= idUsuarioActual() ?>" class="btn-capturar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <span class="icon">👤</span>
                 <span>Ver mi Perfil</span>
             </a>
@@ -74,6 +56,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                     <?php endif; ?>
 
                     <form action="controller/modificarPerfil.controller.php" method="POST" enctype="multipart/form-data" class="edit-profile-form">
+                        <?= csrfInput() ?>
                         <!-- Vista previa de la foto actual -->
                         <div class="profile-image-section">
                             <div class="current-profile-image">
@@ -145,7 +128,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                                 <span class="icon">💾</span>
                                 Guardar Cambios
                             </button>
-                            <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="btn-cancel">
+                            <a href="controller/perfilUsuarioPage.controller.php?id=<?= idUsuarioActual() ?>" class="btn-cancel">
                                 <span class="icon">❌</span>
                                 Cancelar
                             </a>
@@ -163,7 +146,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             <h3>🔐 Cambiar Contraseña</h3>
                             <p>Actualiza tu contraseña para mantener tu cuenta segura. Te recomendamos usar una contraseña fuerte y única.</p>
                         </div>
-                        <a href="view/cambiarContrasena.vista.php" class="btn-security">
+                        <a href="controller/cambiarContrasenaPage.controller.php" class="btn-security">
                             <span class="icon">🔒</span>
                             Cambiar Contraseña
                         </a>

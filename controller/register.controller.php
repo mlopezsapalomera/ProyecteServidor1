@@ -8,6 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+csrfRequireOrRedirect('../view/register.vista.php');
+
 $usuari = isset($_POST['username']) ? trim($_POST['username']) : '';
 $correu = isset($_POST['email']) ? trim($_POST['email']) : '';
 $contrasenya = isset($_POST['password']) ? $_POST['password'] : '';
@@ -63,7 +65,7 @@ if ($nuevoId) {
     $usuarioRegistrado = obtenerUsuarioPorId($nuevoId);
     iniciarSesion($usuarioRegistrado);
     $mensaje = 'Bienvenido ' . $usuari . '!';
-    header('Location: ../view/index.php?ok=' . urlencode($mensaje));
+    header('Location: ../index.php?ok=' . urlencode($mensaje));
     exit;
 }
 

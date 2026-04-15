@@ -9,6 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+csrfRequireOrRedirect('../view/login.vista.php');
+
 if (!isset($_SESSION['intentos_login'])) {
     $_SESSION['intentos_login'] = 0;
 }
@@ -40,21 +42,14 @@ if ($usuari) {
     
     // recordar sesion
     if ($recordarme) {
-        $token = crearRememberToken($usuari['id'], 1);
+        $diasRemember = rememberMeDias();
+        $token = crearRememberToken($usuari['id'], $diasRemember);
         if ($token) {
-            setcookie(
-                'remember_token',
-                $token,
-                time() + 60,
-                '/',
-                '',
-                false,
-                true
-            );
+            establecerCookieRememberToken($token, $diasRemember);
         }
     }
     
-    header('Location: ../view/index.php?ok=' . urlencode('Has iniciado sesión'));
+    header('Location: ../index.php?ok=' . urlencode('Has iniciado sesión'));
     exit;
 }
 

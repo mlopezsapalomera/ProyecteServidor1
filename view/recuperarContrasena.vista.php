@@ -19,7 +19,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : null;
 <body>
   <nav class="navbar">
     <div class="navbar-container">
-      <a href="view/index.php" class="navbar-brand">🌟 PokéNet</a>
+      <a href="index.php" class="navbar-brand">🌟 PokéNet</a>
       <div class="navbar-actions">
         <a href="view/login.vista.php" class="nav-btn">Iniciar sesión</a>
         <a href="view/register.vista.php" class="nav-btn">Registrarse</a>
@@ -43,6 +43,7 @@ $success = isset($_GET['success']) ? $_GET['success'] : null;
 
     <div class="form-container">
       <form action="controller/solicitarRecuperacion.controller.php" method="post">
+        <?= csrfInput() ?>
         <div class="form-group">
           <label for="email">Correo electrónico *</label>
           <input id="email" name="email" type="email" required placeholder="tu_correo@ejemplo.com">

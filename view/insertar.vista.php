@@ -1,12 +1,6 @@
 <?php
 // view/insertar.vista.php
-require_once __DIR__ . '/../security/auth.php';
-if (!estaIdentificado()) {
-  header('Location: /ProyecteServidor1/view/login.vista.php?error=' . urlencode('Debes iniciar sesión para acceder al formulario.'));
-  exit;
-}
 function e($s){return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');}
-$error = isset($_GET['error']) ? $_GET['error'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -22,15 +16,10 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
   <!-- Navbar tipo Instagram -->
   <nav class="navbar">
     <div class="navbar-container">
-      <a href="view/index.php" class="navbar-brand" style="text-decoration: none;">🌟 PokéNet</a>
+      <a href="index.php" class="navbar-brand" style="text-decoration: none;">🌟 PokéNet</a>
       <div class="navbar-actions">
-        <?php if(estaIdentificado()): ?>
-          <span class="nav-user"><?= e(usuarioActual()['username']) ?></span>
+          <span class="nav-user"><?= e($usuario['username']) ?></span>
           <a class="nav-btn" href="controller/logout.controller.php">Cerrar sesión</a>
-        <?php else: ?>
-          <a href="view/login.vista.php" class="nav-btn">Iniciar sesión</a>
-          <a href="view/register.vista.php" class="nav-btn">Registrarse</a>
-        <?php endif; ?>
       </div>
     </div>
   </nav>
@@ -50,6 +39,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
     <!-- Formulario con glassmorphism -->
     <div class="form-container">
       <form action="controller/insertar.controller.php" method="post">
+        <?= csrfInput() ?>
         <div class="form-group">
           <label for="titulo">🎯 Nombre del Pokémon *</label>
           <input type="text" id="titulo" name="titulo" placeholder="Ej: Pikachu, Charizard, Mewtwo..." required autofocus>
@@ -62,7 +52,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
 
         <div class="actions form">
           <button class="btn primary" type="submit">🏆 Capturar Pokémon</button>
-          <a class="btn secondary" href="view/index.php">🔙 Cancelar</a>
+          <a class="btn secondary" href="index.php">🔙 Cancelar</a>
         </div>
       </form>
     </div>

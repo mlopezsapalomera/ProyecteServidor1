@@ -1,5 +1,22 @@
 ## Error 404 personalizado
-ErrorDocument 404 /../security/404.html
+ErrorDocument 404 /security/404.html
 
-# Deshabilitado DirectoryIndex para mantener URLs consistentes con /view/ visible
-# DirectoryIndex view/index.php 
+Options -Indexes
+DirectoryIndex view/index.php
+
+RewriteEngine On
+RewriteBase /ProyecteServidor1/
+
+# Entrada principal MVC sin index.php en raíz
+RewriteRule ^$ controller/home.controller.php [L,QSA]
+RewriteRule ^index\.php$ controller/home.controller.php [L,QSA]
+RewriteRule ^view/index\.php$ controller/home.controller.php [L,QSA]
+RewriteRule ^view/modificar\.vista\.php$ controller/modificarPage.controller.php [L,QSA]
+RewriteRule ^view/perfilUsuario\.vista\.php$ controller/perfilUsuarioPage.controller.php [L,QSA]
+RewriteRule ^view/resetearContrasena\.vista\.php$ controller/resetearContrasenaPage.controller.php [L,QSA]
+RewriteRule ^view/insertar\.vista\.php$ controller/insertarPage.controller.php [L,QSA]
+
+# Si no existe archivo/directorio real, redirigir al home controller
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . controller/home.controller.php [L,QSA]

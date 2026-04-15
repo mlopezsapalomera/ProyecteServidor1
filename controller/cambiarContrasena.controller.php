@@ -13,16 +13,18 @@ if (!estaIdentificado()) {
 
 // Validar método POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../view/cambiarContrasena.vista.php');
+    header('Location: ../controller/cambiarContrasenaPage.controller.php');
     exit;
 }
+
+csrfRequireOrRedirect('../controller/cambiarContrasenaPage.controller.php');
 
 // Obtener ID del usuario actual
 $idUsuario = idUsuarioActual();
 $datosUsuarioActual = obtenerUsuarioPorId($idUsuario);
 
 if (!$datosUsuarioActual) {
-    header('Location: ../view/index.php?error=' . urlencode('Usuario no encontrado'));
+    header('Location: ../index.php?error=' . urlencode('Usuario no encontrado'));
     exit;
 }
 
@@ -62,7 +64,7 @@ if (empty($errores) && $contrasenaActual === $contrasenaNueva) {
 // Mostrar errores si existen
 if (!empty($errores)) {
     $qs = http_build_query(['error' => implode(' ', $errores)]);
-    header('Location: ../view/cambiarContrasena.vista.php?' . $qs);
+    header('Location: ../controller/cambiarContrasenaPage.controller.php?' . $qs);
     exit;
 }
 
@@ -73,8 +75,8 @@ $nuevoHash = password_hash($contrasenaNueva, PASSWORD_DEFAULT);
 $resultado = actualizarContrasena($idUsuario, $nuevoHash);
 
 if ($resultado) {
-    header('Location: ../view/cambiarContrasena.vista.php?ok=' . urlencode('Contraseña actualizada correctamente.'));
+    header('Location: ../controller/cambiarContrasenaPage.controller.php?ok=' . urlencode('Contraseña actualizada correctamente.'));
 } else {
-    header('Location: ../view/cambiarContrasena.vista.php?error=' . urlencode('Error al actualizar la contraseña. Inténtalo de nuevo.'));
+    header('Location: ../controller/cambiarContrasenaPage.controller.php?error=' . urlencode('Error al actualizar la contraseña. Inténtalo de nuevo.'));
 }
 exit;

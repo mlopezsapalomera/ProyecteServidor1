@@ -2765,6 +2765,16 @@ img.post-avatar {
     box-shadow: 0 4px 16px rgba(24, 119, 242, 0.2);
 }
 
+.btn-github {
+    border-color: #24292f;
+}
+
+.btn-github:hover {
+    background: #f6f8fa;
+    border-color: #24292f;
+    box-shadow: 0 4px 16px rgba(36, 41, 47, 0.2);
+}
+
 /* Responsivo OAuth */
 @media (max-width: 768px) {
     .oauth-buttons {

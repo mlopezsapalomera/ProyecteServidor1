@@ -1,21 +1,7 @@
 <?php
-require_once __DIR__ . '/../model/user.php';
-require_once __DIR__ . '/../security/auth.php';
-
-// Solo administradores pueden acceder
-if (!estaIdentificado() || !esAdmin()) {
-    header('Location: ../view/index.php?error=' . urlencode('Acceso denegado. Solo administradores.'));
-    exit;
-}
 
 // Helper para escapar HTML
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
-
-// Obtener todos los usuarios (excepto admins)
-$usuarios = obtenerTodosLosUsuarios(true);
-
-$ok = isset($_GET['ok']) ? $_GET['ok'] : null;
-$error = isset($_GET['error']) ? $_GET['error'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -33,7 +19,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         <div class="navbar-container">
             <a href="index.php" class="navbar-brand" style="text-decoration: none; color: inherit;">🌟 PokéNet</a>
             <div class="navbar-actions">
-                <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
+                <a href="controller/perfilUsuarioPage.controller.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
                     <?= e(usuarioActual()['username']) ?> <span style="background: #ff006e; padding: 2px 8px; border-radius: 8px; font-size: 0.75rem; margin-left: 4px;">ADMIN</span>
                 </a>
                 <a href="controller/logout.controller.php" class="nav-btn">Cerrar sesión</a>
@@ -47,7 +33,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                 <span class="icon">🏠</span>
                 <span>Inicio</span>
             </a>
-            <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="btn-capturar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <a href="controller/perfilUsuarioPage.controller.php?id=<?= idUsuarioActual() ?>" class="btn-capturar" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                 <span class="icon">👤</span>
                 <span>Mi Perfil</span>
             </a>
@@ -95,7 +81,6 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                                 </thead>
                                 <tbody>
                                     <?php foreach ($usuarios as $usuario): ?>
-                                        <?php $numPublicaciones = contarPublicacionesUsuario($usuario['id']); ?>
                                         <tr>
                                             <td><strong>#<?= e($usuario['id']) ?></strong></td>
                                             <td>
@@ -112,28 +97,27 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                                                      onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
                                             </td>
                                             <td>
-                                                <a href="view/perfilUsuario.vista.php?id=<?= e($usuario['id']) ?>" class="user-link">
+                                                <a href="controller/perfilUsuarioPage.controller.php?id=<?= e($usuario['id']) ?>" class="user-link">
                                                     <?= e($usuario['username']) ?>
                                                 </a>
                                             </td>
                                             <td><?= e($usuario['email']) ?></td>
                                             <td>
-                                                <span class="badge-publications"><?= $numPublicaciones ?></span>
+                                                <span class="badge-publications"><?= (int)$usuario['num_publicaciones'] ?></span>
                                             </td>
                                             <td><?= date('d/m/Y', strtotime($usuario['created_at'])) ?></td>
                                             <td>
                                                 <div class="admin-actions">
-                                                    <a href="view/perfilUsuario.vista.php?id=<?= e($usuario['id']) ?>" 
+                                                                     <a href="controller/perfilUsuarioPage.controller.php?id=<?= e($usuario['id']) ?>" 
                                                        class="btn-admin-action view"
                                                        title="Ver perfil">
                                                         👁️
                                                     </a>
-                                                    <a href="controller/eliminarUsuario.controller.php?id=<?= e($usuario['id']) ?>" 
-                                                       class="btn-admin-action delete"
-                                                       onclick="return confirm('⚠️ ¿Estás seguro de eliminar a <?= e($usuario['username']) ?>?\n\nEsto eliminará:\n- Su cuenta de usuario\n- Todas sus <?= $numPublicaciones ?> publicaciones\n\nEsta acción NO se puede deshacer.');"
-                                                       title="Eliminar usuario">
-                                                        🗑️
-                                                    </a>
+                                                    <form action="controller/eliminarUsuario.controller.php" method="post" style="display:inline;" onsubmit="return confirm('⚠️ ¿Estás seguro de eliminar a <?= e($usuario['username']) ?>?\n\nEsto eliminará:\n- Su cuenta de usuario\n- Todas sus <?= (int)$usuario['num_publicaciones'] ?> publicaciones\n\nEsta acción NO se puede deshacer.');">
+                                                        <?= csrfInput() ?>
+                                                        <input type="hidden" name="id" value="<?= e($usuario['id']) ?>">
+                                                        <button type="submit" class="btn-admin-action delete" title="Eliminar usuario">🗑️</button>
+                                                    </form>
                                                 </div>
                                             </td>
                                         </tr>

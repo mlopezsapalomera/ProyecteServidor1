@@ -5,23 +5,30 @@
 require_once __DIR__ . '/../model/user.php';
 require_once __DIR__ . '/../security/auth.php';
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ../controller/adminPanel.controller.php?error=' . urlencode('Método no permitido.'));
+    exit;
+}
+
+csrfRequireOrRedirect('../controller/adminPanel.controller.php');
+
 // Solo administradores pueden eliminar usuarios
 if (!estaIdentificado() || !esAdmin()) {
-    header('Location: ../view/index.php?error=' . urlencode('Acceso denegado. Solo administradores.'));
+    header('Location: ../index.php?error=' . urlencode('Acceso denegado. Solo administradores.'));
     exit;
 }
 
 // Validar que se recibió un ID
-if (!isset($_GET['id']) || empty($_GET['id'])) {
-    header('Location: ../view/adminPanel.vista.php?error=' . urlencode('ID de usuario no proporcionado.'));
+if (!isset($_POST['id']) || empty($_POST['id'])) {
+    header('Location: ../controller/adminPanel.controller.php?error=' . urlencode('ID de usuario no proporcionado.'));
     exit;
 }
 
-$idUsuario = (int)$_GET['id'];
+$idUsuario = (int)$_POST['id'];
 
 // Validar que el ID sea válido
 if ($idUsuario <= 0) {
-    header('Location: ../view/adminPanel.vista.php?error=' . urlencode('ID de usuario inválido.'));
+    header('Location: ../controller/adminPanel.controller.php?error=' . urlencode('ID de usuario inválido.'));
     exit;
 }
 
@@ -29,19 +36,19 @@ if ($idUsuario <= 0) {
 $datosUsuarioEliminar = obtenerUsuarioPorId($idUsuario);
 
 if (!$datosUsuarioEliminar) {
-    header('Location: ../view/adminPanel.vista.php?error=' . urlencode('Usuario no encontrado.'));
+    header('Location: ../controller/adminPanel.controller.php?error=' . urlencode('Usuario no encontrado.'));
     exit;
 }
 
 // Verificar que no sea un administrador
 if ($datosUsuarioEliminar['role'] === 'admin') {
-    header('Location: ../view/adminPanel.vista.php?error=' . urlencode('No se pueden eliminar usuarios administradores.'));
+    header('Location: ../controller/adminPanel.controller.php?error=' . urlencode('No se pueden eliminar usuarios administradores.'));
     exit;
 }
 
 // Verificar que no se esté intentando eliminar a sí mismo
 if ($idUsuario === idUsuarioActual()) {
-    header('Location: ../view/adminPanel.vista.php?error=' . urlencode('No puedes eliminarte a ti mismo.'));
+    header('Location: ../controller/adminPanel.controller.php?error=' . urlencode('No puedes eliminarte a ti mismo.'));
     exit;
 }
 
@@ -56,8 +63,8 @@ if ($resultado) {
     if ($numPublicaciones > 0) {
         $mensaje .= " Se eliminaron también {$numPublicaciones} publicaciones.";
     }
-    header('Location: ../view/adminPanel.vista.php?ok=' . urlencode($mensaje));
+    header('Location: ../controller/adminPanel.controller.php?ok=' . urlencode($mensaje));
 } else {
-    header('Location: ../view/adminPanel.vista.php?error=' . urlencode('Error al eliminar el usuario. Inténtalo de nuevo.'));
+    header('Location: ../controller/adminPanel.controller.php?error=' . urlencode('Error al eliminar el usuario. Inténtalo de nuevo.'));
 }
 exit;

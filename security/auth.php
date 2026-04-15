@@ -1,6 +1,8 @@
 <?php
 // security/auth.php
 
+require_once __DIR__ . '/../env.php';
+
 // Tiempo de inactividad (40 minutos)
 define('AUTH_TIEMPO_INACTIVIDAD', 2400);
 
@@ -10,12 +12,14 @@ if (session_status() === PHP_SESSION_NONE) {
         'lifetime' => AUTH_TIEMPO_INACTIVIDAD,
         'path' => '/',
         'domain' => '',
-        'secure' => false,
+        'secure' => authEsConexionSegura(),
         'httponly' => true,
         'samesite' => 'Lax'
     ]);
     session_start();
 }
+
+require_once __DIR__ . '/csrf.php';
 
 // Verificar y mantener la sesión activa
 function mantenerSesion() {
@@ -28,10 +32,29 @@ function mantenerSesion() {
     $_SESSION['ultima_actividad'] = time();
 }
 
+function authSesionActiva() {
+    return isset($_SESSION['usuario']) && isset($_SESSION['usuario']['id']);
+}
+
+function authBootstrap() {
+    static $bootstrapped = false;
+
+    if ($bootstrapped) {
+        return;
+    }
+
+    $bootstrapped = true;
+    mantenerSesion();
+
+    if (!authSesionActiva() && isset($_COOKIE['remember_token'])) {
+        intentarLoginAutomatico();
+    }
+}
+
 // Intentar login automático con cookie "Remember Me"
 function intentarLoginAutomatico() {
     // Si ya hay sesión activa, no hacer nada
-    if (estaIdentificado()) {
+    if (authSesionActiva()) {
         return true;
     }
     
@@ -49,17 +72,14 @@ function intentarLoginAutomatico() {
     if ($usuario) {
         // Token válido: iniciar sesión automáticamente
         iniciarSesion($usuario);
+        establecerCookieRememberToken($_COOKIE['remember_token'], rememberMeDias());
         return true;
     } else {
         // Token inválido o expirado: eliminar cookie
-        setcookie('remember_token', '', time() - 3600, '/');
+        limpiarCookieRememberToken();
         return false;
     }
 }
-
-
-mantenerSesion();
-intentarLoginAutomatico();
 
 
 // Iniciar sesión
@@ -80,7 +100,8 @@ function cerrarSesion() {
 
 // Verificar si el usuario está identificado
 function estaIdentificado() {
-    return isset($_SESSION['usuario']) && isset($_SESSION['usuario']['id']);
+    authBootstrap();
+    return authSesionActiva();
 }
 
 // Obtener datos del usuario actual
@@ -101,4 +122,48 @@ function rolUsuarioActual() {
 // Verificar si el usuario actual es admin
 function esAdmin() {
     return estaIdentificado() && rolUsuarioActual() === 'admin';
+}
+
+function rememberMeDias() {
+    return defined('REMEMBER_ME_DAYS') ? (int)REMEMBER_ME_DAYS : 30;
+}
+
+function authEsConexionSegura() {
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+
+    if (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443) {
+        return true;
+    }
+
+    if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+        return true;
+    }
+
+    return false;
+}
+
+function establecerCookieRememberToken($token, $dias = 30) {
+    $expira = time() + ((int)$dias * 24 * 60 * 60);
+
+    setcookie('remember_token', $token, [
+        'expires' => $expira,
+        'path' => '/',
+        'domain' => '',
+        'secure' => authEsConexionSegura(),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+}
+
+function limpiarCookieRememberToken() {
+    setcookie('remember_token', '', [
+        'expires' => time() - 3600,
+        'path' => '/',
+        'domain' => '',
+        'secure' => authEsConexionSegura(),
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
 }

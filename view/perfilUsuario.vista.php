@@ -1,45 +1,8 @@
 <?php
-require_once __DIR__ . '/../model/user.php';
-require_once __DIR__ . '/../model/pokemon.php';
-require_once __DIR__ . '/../security/auth.php';
 
 // Helper para escapar HTML
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
 
-// Obtener ID del usuario del perfil
-$perfilUserId = isset($_GET['id']) ? (int)$_GET['id'] : idUsuarioActual();
-
-// Si no hay usuario especificado ni sesión activa, redirigir
-if (!$perfilUserId) {
-    header('Location: ../view/login.vista.php');
-    exit;
-}
-
-// Obtener información del usuario
-$perfilUsuario = obtenerUsuarioPorId($perfilUserId);
-if (!$perfilUsuario) {
-    header('Location: ../view/index.php?error=' . urlencode('Usuario no encontrado'));
-    exit;
-}
-
-// Obtener parámetros de paginación para posts del usuario
-$porPagina = isset($_GET['porPagina']) && is_numeric($_GET['porPagina']) ? (int)$_GET['porPagina'] : 10;
-if ($porPagina < 1) $porPagina = 10;
-
-$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-if ($pagina < 1) $pagina = 1;
-
-// Calcular paginación
-$totalPokemons = contarPokemonsPorUsuario($perfilUserId);
-$totalPaginas = max(1, ceil($totalPokemons / $porPagina));
-if ($pagina > $totalPaginas) $pagina = $totalPaginas;
-
-// Obtener pokémons del usuario
-$desplazamiento = ($pagina - 1) * $porPagina;
-$pokemons = obtenerPokemonsPorUsuario($perfilUserId, $porPagina, $desplazamiento);
-
-// Verificar si es el perfil del usuario actual
-$esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -58,7 +21,7 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
             <a href="index.php" class="navbar-brand" style="text-decoration: none; color: inherit;">🌟 PokéNet</a>
             <div class="navbar-actions">
                 <?php if (estaIdentificado()): ?>
-                    <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
+                    <a href="controller/perfilUsuarioPage.controller.php?id=<?= idUsuarioActual() ?>" class="nav-user" style="text-decoration: none; color: inherit;">
                         <?= e(usuarioActual()['username']) ?>
                     </a>
                     <a href="controller/logout.controller.php" class="nav-btn">Cerrar sesión</a>
@@ -79,11 +42,11 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
             </a>
             
             <?php if ($esMiPerfil): ?>
-                <a href="view/insertar.vista.php" class="btn-capturar">
+                <a href="controller/insertarPage.controller.php" class="btn-capturar">
                     <span class="icon">⚡</span>
                     <span>Capturar Pokémon</span>
                 </a>
-                <a href="view/modificarPerfil.vista.php" class="btn-capturar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <a href="controller/modificarPerfilPage.controller.php" class="btn-capturar" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                     <span class="icon">✏️</span>
                     <span>Editar Perfil</span>
                 </a>
@@ -154,13 +117,14 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
                                 <?php endif; ?>
                                 <?php if ($esMiPerfil): ?>
                                     <div class="post-actions post-actions-right">
-                                        <a class="post-btn edit" href="view/modificar.vista.php?id=<?= e($row['id']) ?>" title="Editar">
+                                        <a class="post-btn edit" href="controller/modificarPage.controller.php?id=<?= e($row['id']) ?>" title="Editar">
                                             &#x270F;&#xFE0F;
                                         </a>
-                                        <a class="post-btn delete" href="controller/eliminar.controller.php?id=<?= e($row['id']) ?>"
-                                           onclick="return confirm('¿Seguro que quieres eliminar este Pokémon?');" title="Eliminar">
-                                            &#x1F5D1;&#xFE0F;
-                                        </a>
+                                        <form action="controller/eliminar.controller.php" method="post" style="display:inline;" onsubmit="return confirm('¿Seguro que quieres eliminar este Pokémon?');">
+                                            <?= csrfInput() ?>
+                                            <input type="hidden" name="id" value="<?= e($row['id']) ?>">
+                                            <button class="post-btn delete" type="submit" title="Eliminar">&#x1F5D1;&#xFE0F;</button>
+                                        </form>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -180,7 +144,7 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
                         $paginaAnteriorDeshabilitada = ($pagina <= 1);
                         $paginaAnterior = max(1, $pagina - 1);
                         $parametrosBase['pagina'] = $paginaAnterior;
-                        $urlAnterior = 'view/perfilUsuario.vista.php?' . http_build_query($parametrosBase);
+                        $urlAnterior = 'controller/perfilUsuarioPage.controller.php?' . http_build_query($parametrosBase);
                     ?>
                     <a href="<?= e($urlAnterior) ?>" class="<?= $paginaAnteriorDeshabilitada ? 'disabled' : '' ?>">Anterior</a>
 
@@ -188,7 +152,7 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
                         <?php
                             $parametros = $parametrosBase;
                             $parametros['pagina'] = $i;
-                            $url = 'view/perfilUsuario.vista.php?' . http_build_query($parametros);
+                            $url = 'controller/perfilUsuarioPage.controller.php?' . http_build_query($parametros);
                         ?>
                         <a href="<?= e($url) ?>" class="<?= $i == $pagina ? 'active' : '' ?>">
                             <?= $i ?>
@@ -199,7 +163,7 @@ $esMiPerfil = estaIdentificado() && idUsuarioActual() === $perfilUserId;
                         $paginaSiguienteDeshabilitada = ($pagina >= $totalPaginas);
                         $paginaSiguiente = min($totalPaginas, $pagina + 1);
                         $baseParams['page'] = $nextPage;
-                        $nextUrl = 'view/perfilUsuario.vista.php?' . http_build_query($baseParams);
+                        $nextUrl = 'controller/perfilUsuarioPage.controller.php?' . http_build_query($baseParams);
                     ?>
                     <a href="<?= e($nextUrl) ?>" class="<?= $nextDisabled ? 'disabled' : '' ?>">Siguiente</a>
                 </div>

@@ -9,44 +9,17 @@
 require_once __DIR__ . '/../env.php';
 
 $hybridauth_config = [
-    'callback' => 'http://localhost/ProyecteServidor1/controller/oauth.controller.php',
+    'callback' => 'http://localhost/ProyecteServidor1/controller/oauthHybridGithub.controller.php',
     
     'providers' => [
-        'Google' => [
+        'GitHub' => [
             'enabled' => true,
             'keys' => [
-                'id' => GOOGLE_CLIENT_ID,
-                'secret' => GOOGLE_CLIENT_SECRET
-            ],
-            'scope' => 'openid profile email',
-            'authorize_url_parameters' => [
-                'approval_prompt' => 'auto'
-            ]
-        ],
-        
-        // Descomenta si quieres agregar Facebook más adelante
-        /*
-        'Facebook' => [
-            'enabled' => false,
-            'keys' => [
-                'id' => FACEBOOK_APP_ID,
-                'secret' => FACEBOOK_APP_SECRET
-            ],
-            'scope' => 'email, public_profile'
-        ],
-        */
-        
-        // Descomenta si quieres agregar GitHub más adelante
-        /*
-        'GitHub' => [
-            'enabled' => false,
-            'keys' => [
-                'id' => GITHUB_CLIENT_ID,
-                'secret' => GITHUB_CLIENT_SECRET
+                'id' => defined('GITHUB_CLIENT_ID') ? GITHUB_CLIENT_ID : '',
+                'secret' => defined('GITHUB_CLIENT_SECRET') ? GITHUB_CLIENT_SECRET : ''
             ],
             'scope' => 'user:email'
         ],
-        */
     ],
     
     'debug_mode' => true,

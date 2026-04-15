@@ -1,0 +1,79 @@
+1. Cal actualitzar el README tot explicant aquelles funcionalitats que s’han desenvolupat
+    2. db.php ignora les constants de env.php.
+// env.php defineix DB_USER i DB_PASS però db.php no les usa:
+// ...però db.php fa:
+$nom_variable_connexio = new PDO($dsn, 'root', '', [...]);
+Les constants no serveixen de res. Si mai es canvia l'usuari de BD a env.php, db.php continuarà connectant amb root/''.
+    3. Cap protecció CSRF en cap formulari (login, registre, canvi de contrasenya, modificar perfil, insertar, eliminar) té token CSRF. Un atacant pot fer que un usuari autenticat executi accions sense saber-ho amb una pàgina maliciosa externa.
+    4. security/auth.php
+La cookie de sessió es transmet per HTTP sense xifrat. Acceptable en local, però si es desplega en producció és un risc real de robatori de sessió.
+session_set_cookie_params([
+    'lifetime' => AUTH_TIEMPO_INACTIVIDAD,
+    'path' => '/',
+    'domain' => '',
+    'secure' => false,      
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+    5. Problemes al Remember-me:
+// login.controller.php:
+$token = crearRememberToken($usuari['id'], 1); // 1 dia a la BD
+setcookie('remember_token', $token, time() + 60, ...); // però la cookie caduca en 60 SEGONS
+El comentari diu "1 minuto (para pruebas)" però el paràmetre 1 s'usa com a dies a la funció, no minuts.
+La cookie caduca en 60 segons però el token a la BD dura 1 dia: desincronització total.
+A més, crearRememberToken (majúscula T) es crida al controlador, però la funció es diu crearRemembertoken (minúscula t) a user.php. PHP és case-insensitive amb funcions, però és un error de consistència que en altres contextos podria fallar.
+    6. session_start() el crides a solicitarRecuperacion.controller.php i resetearContrasena.controller.php però auth.php ja ho fa.
+A auth.php, al principi del fitxer fas:
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([...]);
+    session_start();
+}
+Aixòja seria correcte, el problema és que solicitarRecuperacion.controller.php i resetearContrasena.controller.php fan això al principi (abans d'incloure auth.php):
+
+session_start(); //fas primer session_start
+require_once __DIR__ . '/../env.php';
+require_once __DIR__ . '/../model/user.php';
+//auth.php no s'inclou aquí directament,
+//però model/user.php inclou db.php...
+El cas concret és que session_start() es crida sense el condicional de comprovació, a diferència de com ho fa auth.php. Depenent de l'ordre en què PHP carregui els fitxers.
+
+    7. mantenerSesion() i intentarLoginAutomatico() s'executen en el scope global
+// auth.php, al final del fitxer:
+mantenerSesion();
+intentarLoginAutomatico();
+intentarLoginAutomatico() fa un require_once de user.php, que al seu torn fa require de db.php: cada pàgina que inclogui auth.php obre una connexió a la BD incondicionalment, fins i tot les pàgines que no la necessiten.
+
+    8. tenir dos fitxers index evidencia que el MVC no és correcte! L’index de l’arrel no aporta res
+    9. Codi executable al scope global dels models. Tant user.php com pokemon.php comencen amb:
+$nom_variable_connexio = require __DIR__ . '/db.php';
+Això és codi que s'executa en el moment de l'include. Un model hauria de ser una col·lecció de funcions, no executar res al ser inclòs. Això pertany a la inicialització del controlador o a un bootstrap.
+    10. tens una vista que crida a un controlador, no hauria de ser al revés….?
+segons el README fas view/index.php → paginacio.controller.php però és exactament al revés de com ha de passar en un mvc
+    11. adminPanel.vista.php - crida al model directament i fa lògica de negoci
+// Directament a la vista:
+$usuarios = obtenerTodosLosUsuarios(true);  
+$numPublicaciones = contarPublicacionesUsuario($usuario['id']); // dins el foreach!
+contarPublicacionesUsuario() es crida una vegada per cada usuari dins el bucle del HTML. Això significa N consultes a la BD executades des de la vista. Hauria d'estar al controlador, i passar les dades ja preparades a la vista. 
+Resumint: la vista està cridant el model directament i fas una consulta a la BDD dins de l’HTML
+    12. cambiarContrasena.vista.php - fa autenticació i consulta a la BD
+$usuario = obtenerUsuarioPorId(idUsuarioActual()); // consulta a BD des de la vista
+if (!$usuario) {
+    header('Location: ...'); exit; // redirecció des de la vista
+}
+Les redireccions i les consultes a la BD no pertanyen a la vista. Això és feina del controlador
+    13. modificarPerfil.vista.php igual que cambiarContrasena.vista.php 
+    14. el més greu: modificar.vista.php - consulta, validació i redirecció des de la vista. La vista fa la consulta, comprova permisos i redirigeix. Tres responsabilitats que no li corresponen.
+$pokemon = $id > 0 ? obtenerPokemonPorId($id) : null; // BD des de la vista
+if (!$pokemon) { echo '...'; exit; }
+if (!estaIdentificado() || (int)$pokemon['user_id'] !== idUsuarioActual()) {
+    header('Location: ...'); exit; // control d'accés des de la vista
+}
+    15. revisa també perfilUsuario.vista.php i resetearContrasena.vista.php
+    16. Patró comú a totes les vistes: autenticació duplicada
+if (!estaIdentificado()) {
+    header('Location: ...'); exit;
+}
+En MVC, el controlador hauria de fer aquesta comprovació abans de carregar la vista. La vista mai hauria de saber si l'usuari està autenticat per decidir si es renderitza o no.
+    17. Social Auth no implementat:
+    18. declara però no fa servir limpiarTokenRecuperacion() a user.php
+    19. user.php és com el sac desastre que conté tot allò que no tens clar on posar-ho.

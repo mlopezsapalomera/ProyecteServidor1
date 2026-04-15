@@ -1,8 +1,10 @@
 <?php
 
-session_start();
+require_once __DIR__ . '/../security/csrf.php';
 require_once __DIR__ . '/../env.php';
 require_once __DIR__ . '/../model/user.php';
+
+csrfRequireOrRedirect('../view/login.vista.php');
 
 if (!isset($_POST['token']) || !isset($_POST['password']) || !isset($_POST['password_confirm'])) {
     header('Location: ../view/login.vista.php?error=' . urlencode('Faltan datos'));
@@ -19,12 +21,12 @@ if (empty($token)) {
 }
 
 if (strlen($password) < 6) {
-    header('Location: ../view/resetearContrasena.vista.php?token=' . urlencode($token) . '&error=' . urlencode('La contraseña debe tener minimo 6 caracteres'));
+    header('Location: ../controller/resetearContrasenaPage.controller.php?token=' . urlencode($token) . '&error=' . urlencode('La contraseña debe tener minimo 6 caracteres'));
     exit();
 }
 
 if ($password !== $passwordConfirm) {
-    header('Location: ../view/resetearContrasena.vista.php?token=' . urlencode($token) . '&error=' . urlencode('Las contraseñas no coinciden'));
+    header('Location: ../controller/resetearContrasenaPage.controller.php?token=' . urlencode($token) . '&error=' . urlencode('Las contraseñas no coinciden'));
     exit();
 }
 

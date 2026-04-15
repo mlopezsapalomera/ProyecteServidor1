@@ -2,6 +2,104 @@
 
 Red social temática de Pokémon desarrollada con PHP, MySQL y JavaScript.
 
+## Actualización de funcionalidades (08/04/2026)
+
+Se han consolidado y documentado las funcionalidades implementadas en el proyecto con foco en seguridad y mantenimiento:
+
+1. Configuración de base de datos centralizada por entorno.
+2. Protección CSRF en formularios críticos de autenticación y edición.
+3. Endurecimiento de acciones destructivas (eliminaciones) con POST + token.
+4. Endurecimiento de cookies de sesión para entornos HTTPS.
+5. Corrección integral del flujo Remember-me.
+6. Refactor del dominio de usuario por módulos (fin del `user.php` monolítico).
+7. Endurecimiento de Social Auth (OAuth Google) con validación de configuración.
+
+### 1) Configuración DB desde env.php
+
+El archivo `model/db.php` ahora usa directamente las constantes de entorno:
+
+- `DB_HOST`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASS`
+
+Esto evita credenciales hardcodeadas y permite cambiar entorno/usuario de MySQL sin modificar el código de conexión.
+
+### 2) CSRF en formularios de mutación
+
+Se ha añadido un helper compartido en `security/csrf.php` con estas funciones:
+
+- `csrfToken()`
+- `csrfInput()`
+- `csrfValidoPost()`
+- `csrfRequireOrRedirect()`
+
+El token CSRF se inyecta en formularios de:
+
+- Login
+- Registro
+- Insertar publicación
+- Modificar publicación
+- Modificar perfil
+- Cambiar contraseña
+- Solicitar recuperación de contraseña
+- Resetear contraseña
+- Eliminar publicación
+- Eliminar usuario (panel admin)
+
+### 3) Validación CSRF en controladores
+
+Se valida token CSRF en todos los controladores que procesan `POST` y modifican estado.
+
+Además, las eliminaciones dejaron de aceptar `GET`:
+
+- `controller/eliminar.controller.php`
+- `controller/eliminarUsuario.controller.php`
+
+Ahora solo aceptan `POST` + token válido.
+
+### 4) Cookie de sesión más segura según entorno
+
+La cookie de sesión ya no queda forzada a `secure=false`.
+
+- En HTTP local se mantiene funcional.
+- En HTTPS pasa automáticamente a `secure=true`.
+
+Esto reduce el riesgo de robo de sesión en despliegues productivos.
+
+### 5) Remember-me sincronizado y consistente
+
+Se corrigen problemas de duración y consistencia:
+
+- Duración configurable con `REMEMBER_ME_DAYS` en `env.php`.
+- Mismo tiempo de vida en cookie y en BD.
+- Función unificada `crearRememberToken` (consistencia de naming).
+- Renovación de expiración de cookie cuando se valida login automático.
+- Limpieza de cookie centralizada en logout e intentos inválidos.
+
+### 6) `user.php` distribuido por responsabilidades
+
+Se elimina el enfoque de "saco de todo" en `model/user.php`. Ahora `model/user.php` actúa como agregador y carga módulos concretos:
+
+- `model/user/db_connection.php`
+- `model/user/account.model.php`
+- `model/user/admin.model.php`
+- `model/user/remember.model.php`
+- `model/user/recovery.model.php`
+- `model/user/oauth.model.php`
+
+Esto facilita mantenimiento, pruebas y evolución por dominio.
+
+### 7) Social Auth (OAuth) endurecido
+
+OAuth Google queda validado antes de iniciar flujo:
+
+- Se rechazan proveedores no soportados.
+- Se exige configuración real de `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
+- Se valida que el proveedor devuelva identificador y email.
+
+Si faltan credenciales reales en `env.php`, el sistema devuelve un error funcional claro en vez de fallar silenciosamente.
+
 ---
 
 ## 📑 Contenido

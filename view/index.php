@@ -1,19 +1,7 @@
 <?php
-require_once __DIR__ . '/../controller/paginacio.controller.php';
-require_once __DIR__ . '/../security/auth.php';
-require_once __DIR__ . '/../model/user.php';
 
 // Pequeño helper para escapar HTML
 function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
-
-// Obtener datos completos del usuario actual si está autenticado
-$usuarioCompleto = null;
-if (estaIdentificado()) {
-    $usuarioCompleto = obtenerUsuarioPorId(idUsuarioActual());
-}
-
-$ok = isset($_GET['ok']) ? $_GET['ok'] : null;
-$error = isset($_GET['error']) ? $_GET['error'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -50,12 +38,12 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             <span class="user-dropdown-arrow">▼</span>
                         </button>
                         <div class="user-dropdown-menu" id="userDropdownMenu">
-                            <a href="view/perfilUsuario.vista.php?id=<?= idUsuarioActual() ?>" class="dropdown-item">
+                            <a href="controller/perfilUsuarioPage.controller.php?id=<?= idUsuarioActual() ?>" class="dropdown-item">
                                 <span class="dropdown-icon">👤</span>
                                 Mi Perfil
                             </a>
                             <?php if (esAdmin()): ?>
-                                <a href="view/adminPanel.vista.php" class="dropdown-item">
+                                <a href="controller/adminPanel.controller.php" class="dropdown-item">
                                     <span class="dropdown-icon">👨‍💼</span>
                                     Panel de Usuarios
                                 </a>
@@ -146,7 +134,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             <?php foreach ($pokemons as $row): ?>
                 <div class="post-card" onclick="abrirModalPublicacion(<?= htmlspecialchars(json_encode($row), ENT_QUOTES, 'UTF-8') ?>)">
                     <?php if (isset($row['autor_profile_image']) && isset($row['autor_id'])): ?>
-                        <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="text-decoration: none;" onclick="event.stopPropagation();">
+                        <a href="controller/perfilUsuarioPage.controller.php?id=<?= e($row['autor_id']) ?>" style="text-decoration: none;" onclick="event.stopPropagation();">
                             <img src="<?php 
                                     $imgPath = $row['autor_profile_image'];
                                     if ($imgPath === 'userDefaultImg.jpg') {
@@ -171,7 +159,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             <small class="post-author">
                                 Publicado por: 
                                 <?php if (isset($row['autor_id'])): ?>
-                                    <a href="view/perfilUsuario.vista.php?id=<?= e($row['autor_id']) ?>" style="color: #9C27B0; text-decoration: none; font-weight: bold;" onclick="event.stopPropagation();">
+                                    <a href="controller/perfilUsuarioPage.controller.php?id=<?= e($row['autor_id']) ?>" style="color: #9C27B0; text-decoration: none; font-weight: bold;" onclick="event.stopPropagation();">
                                         <?= e($row['autor_username'] ?? 'Anónimo') ?>
                                     </a>
                                 <?php else: ?>
@@ -185,13 +173,14 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                         <?php endif; ?>
                         <div class="post-actions post-actions-right">
                             <?php if (estaIdentificado() && isset($row['user_id']) && (int)$row['user_id'] === idUsuarioActual()): ?>
-                                <a class="post-btn edit" href="view/modificar.vista.php?id=<?= e($row['id']) ?>" title="Editar" onclick="event.stopPropagation();">
+                                <a class="post-btn edit" href="controller/modificarPage.controller.php?id=<?= e($row['id']) ?>" title="Editar" onclick="event.stopPropagation();">
                                     &#x270F;&#xFE0F;
                                 </a>
-                                <a class="post-btn delete" href="controller/eliminar.controller.php?id=<?= e($row['id']) ?>"
-                                   onclick="event.stopPropagation(); return confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.');" title="Eliminar">
-                                    &#x1F5D1;&#xFE0F;
-                                </a>
+                                <form action="controller/eliminar.controller.php" method="post" style="display:inline;" onsubmit="event.stopPropagation(); return confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.');">
+                                    <?= csrfInput() ?>
+                                    <input type="hidden" name="id" value="<?= e($row['id']) ?>">
+                                    <button class="post-btn delete" type="submit" title="Eliminar">&#x1F5D1;&#xFE0F;</button>
+                                </form>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -262,7 +251,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             
             <!-- Botón insertar (solo para usuarios autenticados) -->
             <?php if (estaIdentificado()): ?>
-                <a href="view/insertar.vista.php" class="btn-capturar">
+                <a href="controller/insertarPage.controller.php" class="btn-capturar">
                     <span class="icon">⚡</span>
                     <span>Capturar Pokémon</span>
                 </a>
@@ -302,12 +291,17 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                 <a id="modalEditBtn" href="#" class="modal-btn edit">
                     <span>✏️</span> Editar
                 </a>
-                <a id="modalDeleteBtn" href="#" class="modal-btn delete" onclick="return confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.');">
+                <button id="modalDeleteBtn" type="button" class="modal-btn delete">
                     <span>🗑️</span> Eliminar
-                </a>
+                </button>
             </div>
         </div>
     </div>
+
+    <form id="deletePokemonForm" action="controller/eliminar.controller.php" method="post" style="display:none;">
+        <?= csrfInput() ?>
+        <input type="hidden" name="id" id="deletePokemonId" value="">
+    </form>
 
     <script>
     // ===== MODAL DE PUBLICACIÓN =====
@@ -339,7 +333,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
 
         // Configurar enlaces al perfil del autor
         if (post.autor_id) {
-            const perfilUrl = 'view/perfilUsuario.vista.php?id=' + post.autor_id;
+            const perfilUrl = 'controller/perfilUsuarioPage.controller.php?id=' + post.autor_id;
             avatarLink.href = perfilUrl;
             autorLink.href = perfilUrl;
         } else {
@@ -372,8 +366,10 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
             const currentUserId = <?= idUsuarioActual() ?>;
             if (post.user_id && parseInt(post.user_id) === currentUserId) {
                 actions.style.display = 'flex';
-                editBtn.href = 'view/modificar.vista.php?id=' + post.id;
-                deleteBtn.href = 'controller/eliminar.controller.php?id=' + post.id;
+                editBtn.href = 'controller/modificarPage.controller.php?id=' + post.id;
+                deleteBtn.onclick = function() {
+                    eliminarPokemonDesdeModal(post.id);
+                };
             } else {
                 actions.style.display = 'none';
             }
@@ -390,6 +386,15 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
         const modal = document.getElementById('modalPublicacion');
         modal.style.display = 'none';
         document.body.style.overflow = '';
+    }
+
+    function eliminarPokemonDesdeModal(id) {
+        if (!confirm('¿Seguro que quieres eliminar este Pokémon? Esta acción no se puede deshacer.')) {
+            return;
+        }
+
+        document.getElementById('deletePokemonId').value = id;
+        document.getElementById('deletePokemonForm').submit();
     }
 
     // Cerrar modal con tecla ESC
@@ -466,7 +471,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             : `assets/img/userImg/${usuario.profile_image}`;
                         
                         html += `
-                            <a href="view/perfilUsuario.vista.php?id=${usuario.id}" class="search-result-item">
+                            <a href="controller/perfilUsuarioPage.controller.php?id=${usuario.id}" class="search-result-item">
                                 <img src="${imgSrc}" alt="${usuario.username}" class="search-avatar" onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
                                 <div class="search-info">
                                     <div class="search-name">${usuario.username}</div>
@@ -487,7 +492,7 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
                             : `assets/img/userImg/${pub.autor_profile_image}`;
                         
                         html += `
-                            <a href="view/perfilUsuario.vista.php?id=${pub.autor_id}" class="search-result-item">
+                            <a href="controller/perfilUsuarioPage.controller.php?id=${pub.autor_id}" class="search-result-item">
                                 <img src="${imgSrc}" alt="${pub.autor_username}" class="search-avatar" onerror="this.src='assets/img/imgProfileuser/userDefaultImg.jpg'">
                                 <div class="search-info">
                                     <div class="search-name">${pub.titulo}</div>

@@ -3,11 +3,19 @@
 // Modelo para gestión de pokémons
 
 // Obtener conexión a la base de datos
-$nom_variable_connexio = require __DIR__ . '/db.php';
+function pokemonDbConnection() {
+    static $conn = null;
+
+    if ($conn === null) {
+        $conn = require __DIR__ . '/db.php';
+    }
+
+    return $conn;
+}
 
 // Obtener lista paginada de pokémons
 function obtenerPokemons($limit = 100, $offset = 0, $orderBy = 'id', $orderDir = 'DESC') {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     
     // Validar campo de ordenación (whitelist)
     $camposPermitidos = ['id', 'titulo', 'created_at'];
@@ -36,7 +44,7 @@ function obtenerPokemons($limit = 100, $offset = 0, $orderBy = 'id', $orderDir =
 
 // Obtener pokemon por ID
 function obtenerPokemonPorId($id) {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "SELECT * FROM pokemons WHERE id = :id";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
@@ -46,7 +54,7 @@ function obtenerPokemonPorId($id) {
 
 // Insertar nuevo pokemon
 function insertarPokemon($titulo, $descripcion = null, $user_id = null) {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "INSERT INTO pokemons (titulo, descripcion, user_id) VALUES (:titulo, :descripcion, :user_id)";
     $stmt = $nom_variable_connexio->prepare($sql);
     return $stmt->execute([
@@ -58,7 +66,7 @@ function insertarPokemon($titulo, $descripcion = null, $user_id = null) {
 
 // Actualizar pokemon existente
 function actualizarPokemon($id, $titulo, $descripcion = null) {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "UPDATE pokemons SET titulo = :titulo, descripcion = :descripcion WHERE id = :id";
     $stmt = $nom_variable_connexio->prepare($sql);
     return $stmt->execute([
@@ -70,7 +78,7 @@ function actualizarPokemon($id, $titulo, $descripcion = null) {
 
 // Eliminar pokemon por ID
 function eliminarPokemon($id) {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "DELETE FROM pokemons WHERE id = :id";
     $stmt = $nom_variable_connexio->prepare($sql);
     return $stmt->execute([':id' => $id]);
@@ -78,7 +86,7 @@ function eliminarPokemon($id) {
 
 // Contar total de pokémons
 function contarPokemons() {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "SELECT COUNT(*) as total FROM pokemons";
     $stmt = $nom_variable_connexio->query($sql);
     $row = $stmt->fetch();
@@ -87,7 +95,7 @@ function contarPokemons() {
 
 // Obtener pokémons de un usuario específico
 function obtenerPokemonsPorUsuario($userId, $limit = 100, $offset = 0) {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "SELECT p.*, u.username AS autor_username, u.profile_image AS autor_profile_image
             FROM pokemons p
             LEFT JOIN users u ON p.user_id = u.id
@@ -103,7 +111,7 @@ function obtenerPokemonsPorUsuario($userId, $limit = 100, $offset = 0) {
 }
 // Buscar pokémons por título (para búsqueda AJAX)
 function buscarPokemons($query, $limit = 10) {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "SELECT p.*, u.username AS autor_username, u.profile_image AS autor_profile_image, u.id AS autor_id
             FROM pokemons p
             LEFT JOIN users u ON p.user_id = u.id
@@ -118,7 +126,7 @@ function buscarPokemons($query, $limit = 10) {
 }
 // Contar pokémons de un usuario específico
 function contarPokemonsPorUsuario($userId) {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
     $sql = "SELECT COUNT(*) as total FROM pokemons WHERE user_id = :user_id";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->bindValue(':user_id', (int)$userId, PDO::PARAM_INT);
@@ -127,17 +135,14 @@ function contarPokemonsPorUsuario($userId) {
     return $row ? (int)$row['total'] : 0;
 }
 
-/*
 function ordenarPokemons($order = 'Desc') {
-    global $nom_variable_connexio;
+    $nom_variable_connexio = pokemonDbConnection();
 
-    // Sanitizamos la entrada
     $order = ($order === 'Asc') ? 'ASC' : 'DESC';
 
-    $sql = "SELECT * FROM pokemons ORDER BY id $order"; // o el campo que quieras
+    $sql = "SELECT * FROM pokemons ORDER BY id $order";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-*/

@@ -8,11 +8,11 @@ require_once __DIR__ . '/../model/user.php';
 // Eliminar token de "Remember-me" si existe
 if (isset($_COOKIE['remember_token'])) {
     eliminarRememberToken($_COOKIE['remember_token']);
-    setcookie('remember_token', '', time() - 3600, '/'); // Eliminar cookie
+    limpiarCookieRememberToken();
 }
 // Cerrar sesión del usuario
 cerrarSesion();
 
 // Redirigir a la página principal
-header('Location: ../view/index.php?ok=' . urlencode('Sesión cerrada.'));
+header('Location: ../index.php?ok=' . urlencode('Sesión cerrada.'));
 exit;
