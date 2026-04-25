@@ -6,7 +6,10 @@
  * como Google, Facebook, GitHub, etc.
  */
 
-require_once __DIR__ . '/../env.php';
+$envFile = __DIR__ . '/../env.php';
+if (file_exists($envFile)) {
+    require_once $envFile;
+}
 
 $hybridauth_config = [
     'callback' => 'http://localhost/ProyecteServidor1/controller/oauthHybridGithub.controller.php',
@@ -22,7 +25,8 @@ $hybridauth_config = [
         ],
     ],
     
-    'debug_mode' => true,
+    // Activar solo para depuracion puntual local.
+    'debug_mode' => false,
     'debug_file' => __DIR__ . '/../logs/hybridauth.log'
 ];
 

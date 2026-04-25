@@ -1,3 +1,8 @@
+-- REGLA DEL PROYECTO:
+-- Este archivo es la fuente unica del esquema y datos iniciales.
+-- Si hay cambios de base de datos, se actualiza este .sql directamente.
+-- No se crean archivos migration_*.sql.
+
 DROP DATABASE IF EXISTS `pt03_marcos_lopez`;
 CREATE DATABASE `pt03_marcos_lopez` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `pt03_marcos_lopez`;

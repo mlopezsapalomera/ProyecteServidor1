@@ -1,511 +1,128 @@
-# 🌟 PokéNet Social - Documentación Técnica
+# README del proyecto (explicado por mi)
 
-Red social temática de Pokémon desarrollada con PHP, MySQL y JavaScript.
+Hola profe,
 
-## Actualización de funcionalidades (08/04/2026)
+este README lo he escrito de forma más simple para contar lo que he hecho en el proyecto, sin tanto lenguaje técnico.
 
-Se han consolidado y documentado las funcionalidades implementadas en el proyecto con foco en seguridad y mantenimiento:
+## Índice
 
-1. Configuración de base de datos centralizada por entorno.
-2. Protección CSRF en formularios críticos de autenticación y edición.
-3. Endurecimiento de acciones destructivas (eliminaciones) con POST + token.
-4. Endurecimiento de cookies de sesión para entornos HTTPS.
-5. Corrección integral del flujo Remember-me.
-6. Refactor del dominio de usuario por módulos (fin del `user.php` monolítico).
-7. Endurecimiento de Social Auth (OAuth Google) con validación de configuración.
+1. [Cómo organicé el proyecto](#cómo-organicé-el-proyecto)
+2. [Cómo uso GET y POST](#cómo-uso-get-y-post)
+3. [Por qué uso require_once y require](#por-qué-uso-require_once-y-require)
+4. [Recuperar contraseña con token y PHPMailer](#recuperar-contraseña-con-token-y-phpmailer)
+5. [OAuth: lo que hice a mano y lo que hice con HybridAuth](#oauth-lo-que-hice-a-mano-y-lo-que-hice-con-hybridauth)
+6. [Cierre](#cierre)
 
-### 1) Configuración DB desde env.php
+## Cómo organicé el proyecto
 
-El archivo `model/db.php` ahora usa directamente las constantes de entorno:
+Lo separé en carpetas para no tener todo mezclado:
 
-- `DB_HOST`
-- `DB_NAME`
-- `DB_USER`
-- `DB_PASS`
+- controller: aquí van los archivos que reciben acciones del usuario (login, registro, borrar, etc).
+- model: aquí van funciones de base de datos y lógica.
+- view: aquí están las pantallas que ve el usuario.
 
-Esto evita credenciales hardcodeadas y permite cambiar entorno/usuario de MySQL sin modificar el código de conexión.
+No he montado un router súper complejo. He ido trabajando con controladores concretos para cada acción.
 
-### 2) CSRF en formularios de mutación
+## Cómo uso GET y POST
 
-Se ha añadido un helper compartido en `security/csrf.php` con estas funciones:
+Yo lo planteé así:
 
-- `csrfToken()`
-- `csrfInput()`
-- `csrfValidoPost()`
-- `csrfRequireOrRedirect()`
+- GET: para mostrar páginas o traer cosas por URL.
+- POST: para enviar formularios y hacer cambios.
 
-El token CSRF se inyecta en formularios de:
+Ejemplo real en login, donde solo dejo pasar POST:
 
-- Login
-- Registro
-- Insertar publicación
-- Modificar publicación
-- Modificar perfil
-- Cambiar contraseña
-- Solicitar recuperación de contraseña
-- Resetear contraseña
-- Eliminar publicación
-- Eliminar usuario (panel admin)
-
-### 3) Validación CSRF en controladores
-
-Se valida token CSRF en todos los controladores que procesan `POST` y modifican estado.
-
-Además, las eliminaciones dejaron de aceptar `GET`:
-
-- `controller/eliminar.controller.php`
-- `controller/eliminarUsuario.controller.php`
-
-Ahora solo aceptan `POST` + token válido.
-
-### 4) Cookie de sesión más segura según entorno
-
-La cookie de sesión ya no queda forzada a `secure=false`.
-
-- En HTTP local se mantiene funcional.
-- En HTTPS pasa automáticamente a `secure=true`.
-
-Esto reduce el riesgo de robo de sesión en despliegues productivos.
-
-### 5) Remember-me sincronizado y consistente
-
-Se corrigen problemas de duración y consistencia:
-
-- Duración configurable con `REMEMBER_ME_DAYS` en `env.php`.
-- Mismo tiempo de vida en cookie y en BD.
-- Función unificada `crearRememberToken` (consistencia de naming).
-- Renovación de expiración de cookie cuando se valida login automático.
-- Limpieza de cookie centralizada en logout e intentos inválidos.
-
-### 6) `user.php` distribuido por responsabilidades
-
-Se elimina el enfoque de "saco de todo" en `model/user.php`. Ahora `model/user.php` actúa como agregador y carga módulos concretos:
-
-- `model/user/db_connection.php`
-- `model/user/account.model.php`
-- `model/user/admin.model.php`
-- `model/user/remember.model.php`
-- `model/user/recovery.model.php`
-- `model/user/oauth.model.php`
-
-Esto facilita mantenimiento, pruebas y evolución por dominio.
-
-### 7) Social Auth (OAuth) endurecido
-
-OAuth Google queda validado antes de iniciar flujo:
-
-- Se rechazan proveedores no soportados.
-- Se exige configuración real de `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
-- Se valida que el proveedor devuelva identificador y email.
-
-Si faltan credenciales reales en `env.php`, el sistema devuelve un error funcional claro en vez de fallar silenciosamente.
-
----
-
-## 📑 Contenido
-
-1. [Ordenación de Artículos](#1-ordenación-de-artículos)
-2. [Sistema Remember-Me](#2-sistema-remember-me)
-3. [Integración reCAPTCHA](#3-integración-recaptcha)
-4. [Edición de Perfil](#4-edición-de-perfil)
-5. [Búsqueda AJAX](#5-búsqueda-ajax)
-6. [Panel de Administración](#6-panel-de-administración)
-
----
-
-## 1. Ordenación de Artículos
-
-**Funcionamiento:** Ordenar publicaciones por ID, título o fecha (ASC/DESC).
-
-**Implementación:**
 ```php
-// Controlador
-$ordenarPor = $_GET['ordenarPor'] ?? 'id';
-$direccionOrden = $_GET['direccionOrden'] ?? 'DESC';
-
-// Modelo - Whitelist de seguridad
-$camposPermitidos = ['id', 'titulo', 'created_at'];
-if (!in_array($orderBy, $camposPermitidos)) $orderBy = 'id';
-
-$sql = "SELECT p.*, u.username FROM pokemons p 
-        LEFT JOIN users u ON p.user_id = u.id
-        ORDER BY p.$orderBy $orderDir LIMIT :limit OFFSET :offset";
-```
-
-**Seguridad:** Whitelist de campos, validación ASC/DESC, Prepared Statements.
-
----
-
-## 2. Sistema Remember-Me
-
-**Funcionamiento:** Mantiene la sesión activa 30 días mediante cookies seguras.
-
-**Proceso:**
-
-1. **Crear Token:**
-```php
-$token = bin2hex(random_bytes(64));  // 128 caracteres
-$tokenHash = hash("sha256", $token); // Hash para BD
-```
-
-2. **Guardar Cookie:**
-```php
-setcookie('remember_token', $token, time() + (30*24*60*60), '/', '', false, true);
-```
-
-3. **Verificar Auto:**
-```php
-if (!estaIdentificado() && isset($_COOKIE['remember_token'])) {
-    $usuario = verificarRememberToken($_COOKIE['remember_token']);
-    if ($usuario) iniciarSesion($usuario);
-}
-```
-
-**Tabla BD:**
-```sql
-CREATE TABLE remember_tokens (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    token_hash VARCHAR(64) NOT NULL,
-    expires_at DATETIME NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-```
-
-**Seguridad:** `random_bytes()`, Hash SHA-256, HttpOnly Cookie, expiración automática.
-
----
-
-## 3. Integración reCAPTCHA
-
-**Funcionamiento:** Protección contra bots tras 3 intentos fallidos.
-
-**Configuración:**
-```php
-define('RECAPTCHA_SITE_KEY', 'tu_site_key');
-define('RECAPTCHA_SECRET_KEY', 'tu_secret_key');
-```
-
-**Control de Intentos:**
-```php
-if (!isset($_SESSION['intentos_login'])) {
-    $_SESSION['intentos_login'] = 0;
-}
-
-// Mostrar captcha después de 3 intentos
-if ($_SESSION['intentos_login'] >= 3) {
-    if (!validarRecaptcha()) {
-        $_SESSION['intentos_login']++;
-        // Mostrar error
-        exit;
-    }
-}
-
-// Si login OK: resetear
-if ($credencialesCorrectas) {
-    $_SESSION['intentos_login'] = 0;
-} else {
-    $_SESSION['intentos_login']++;
-}
-```
-
-**Validación Backend:**
-```php
-function validarRecaptcha() {
-    $url = 'https://www.google.com/recaptcha/api/siteverify';
-    $data = [
-        'secret' => RECAPTCHA_SECRET_KEY,
-        'response' => $_POST['g-recaptcha-response'],
-        'remoteip' => $_SERVER['REMOTE_ADDR']
-    ];
-    // POST a Google y verificar respuesta
-    $response = json_decode(file_get_contents($url, false, $context));
-    return $response->success === true;
-}
-```
-
-**Vista:**
-```html
-<script src="https://www.google.com/recaptcha/api.js"></script>
-<?php if ($_SESSION['intentos_login'] >= 3): ?>
-    <div class="g-recaptcha" data-sitekey="<?= RECAPTCHA_SITE_KEY ?>"></div>
-<?php endif; ?>
-```
-
-**Seguridad:** Activación progresiva, verificación backend, reset automático, tracking de IP.
-
----
-
-## 4. Edición de Perfil
-
-**Funcionamiento:** Modificar username y foto de perfil con validaciones.
-
-**Validaciones Username:**
-- Longitud: 3-100 caracteres
-- Único en BD (excepto el actual)
-- Obligatorio
-
-**Validación Imagen:**
-```php
-// Validar MIME type real (no solo extensión)
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$tipoArchivo = finfo_file($finfo, $_FILES['profile_image']['tmp_name']);
-
-$tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif'];
-if (!in_array($tipoArchivo, $tiposPermitidos)) {
-    $errores[] = 'Solo JPG, PNG o GIF';
-}
-
-// Validar tamaño (5MB máx)
-if ($_FILES['profile_image']['size'] > 5 * 1024 * 1024) {
-    $errores[] = 'Máximo 5MB';
-}
-
-// Generar nombre único con timestamp
-$nombreArchivo = 'user_' . $idUsuario . '_' . time() . '.jpg';
-move_uploaded_file($tmpName, 'assets/img/userImg/' . $nombreArchivo);
-
-// Eliminar imagen anterior (si no es la por defecto)
-if ($imagenAnterior !== 'userDefaultImg.jpg') {
-    unlink('assets/img/userImg/' . $imagenAnterior);
-}
-```
-
-**Actualizar Sesión:**
-```php
-$_SESSION['usuario']['username'] = $nuevoUsername; // Reflejar cambios inmediatos
-```
-
-**Modelo:**
-```php
-function actualizarPerfil($userId, $username, $profileImage = null) {
-    if ($profileImage) {
-        $sql = "UPDATE users SET username = :username, profile_image = :image WHERE id = :id";
-    } else {
-        $sql = "UPDATE users SET username = :username WHERE id = :id";
-    }
-    // Ejecutar con prepared statement
-}
-```
-
-**Validaciones:** Username único, longitud 3-100, MIME type real, tamaño máx 5MB, nombre único timestamp.
-
----
-
-## 5. Búsqueda AJAX
-
-**Funcionamiento:** Búsqueda en tiempo real sin recargar, con debouncing (300ms) y límite de 5 resultados por categoría.
-
-**JavaScript:**
-```javascript
-searchInput.addEventListener('input', function() {
-    clearTimeout(searchTimeout);
-    if (query.length < 2) return; // Mínimo 2 caracteres
-    
-    searchTimeout = setTimeout(() => {
-        fetch(`controller/buscar.controller.php?q=${encodeURIComponent(query)}`)
-            .then(response => response.json())
-            .then(data => mostrarResultados(data));
-    }, 300);
-});
-```
-
-**Backend (buscar.controller.php):**
-```php
-header('Content-Type: application/json; charset=utf-8');
-
-$query = trim($_GET['q'] ?? '');
-if (strlen($query) < 2) {
-    echo json_encode(['success' => false, 'usuarios' => [], 'publicaciones' => []]);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: ../view/login.vista.php');
     exit;
 }
 
-try {
-    $usuarios = buscarUsuarios($query, 5);
-    $publicaciones = buscarPokemons($query, 5);
-    
-    echo json_encode([
-        'success' => true,
-        'total' => count($usuarios) + count($publicaciones),
-        'usuarios' => $usuarios,
-        'publicaciones' => $publicaciones
-    ], JSON_UNESCAPED_UNICODE);
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-}
+$campUsuari = isset($_POST['user']) ? trim($_POST['user']) : '';
+$contrasenya = isset($_POST['password']) ? $_POST['password'] : '';
 ```
 
-**Modelo (user.php):**
+Esto lo hice para que no se pueda usar ese controlador mal por URL cuando realmente espera datos de formulario.
+
+## Por qué uso require_once y require
+
+En casi todo uso require_once, porque así me aseguro de que no se cargue el mismo archivo dos veces y no pete el código.
+
+Ejemplo:
+
 ```php
-function buscarUsuarios($query, $limit = 10) {
-    $sql = "SELECT id, username, profile_image FROM users 
-            WHERE username LIKE :query ORDER BY username LIMIT :limit";
-    $stmt->bindValue(':query', '%' . $query . '%', PDO::PARAM_STR);
-    $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-    $stmt->execute();
-    return $stmt->fetchAll();
-}
+require_once __DIR__ . '/../security/csrf.php';
+require_once __DIR__ . '/../env.php';
+require_once __DIR__ . '/../model/user.php';
 ```
 
-**Optimizaciones:** Debouncing 300ms, validación mín 2 caracteres, Prepared Statements, try-catch, JSON válido
+Y en PHPMailer usé require para cargar sus clases:
 
----
-
-## 6. Sistema de Administración
-
-**Funcionamiento:** Panel exclusivo para admins que gestiona usuarios. Rol guardado en `$_SESSION['usuario']['role']`.
-
-**Tabla BD:**
-```sql
-CREATE TABLE users (
-    ...
-    role ENUM('user', 'admin') DEFAULT 'user',
-    ...
-);
-```
-
-**Crear Admin (3 opciones):**
-```sql
--- Opción 1: SQL
-UPDATE users SET role = 'admin' WHERE id = 1;
-UPDATE users SET role = 'admin' WHERE username = 'nombre_usuario';
-
--- Opción 2: phpMyAdmin
--- Editar tabla users → cambiar campo role a 'admin'
-
--- Opción 3: Función PHP
-function actualizarRolUsuario($userId, $nuevoRol) {
-    $rolesValidos = ['user', 'admin'];
-    if (!in_array($nuevoRol, $rolesValidos)) return false;
-    $sql = "UPDATE users SET role = :role WHERE id = :id";
-    $stmt->execute([':role' => $nuevoRol, ':id' => $userId]);
-}
-```
-
-**Importante:** Después de cambiar el rol, el usuario debe **cerrar sesión y volver a entrar** para que se actualice `$_SESSION`.
-
-**Sistema de Autorización (auth.php):**
 ```php
-function iniciarSesion($usuario) {
-    $_SESSION['usuario'] = [
-        'id' => $usuario['id'],
-        'username' => $usuario['username'],
-        'role' => $usuario['role'] ?? 'user'  // Guardar rol en sesión
-    ];
-}
-
-function estaIdentificado() {
-    return isset($_SESSION['usuario']['id']);
-}
-
-function esAdmin() {
-    return estaIdentificado() && ($_SESSION['usuario']['role'] ?? 'user') === 'admin';
+if (file_exists(__DIR__ . '/../PHPMailer/src/PHPMailer.php')) {
+    require __DIR__ . '/../PHPMailer/src/Exception.php';
+    require __DIR__ . '/../PHPMailer/src/PHPMailer.php';
+    require __DIR__ . '/../PHPMailer/src/SMTP.php';
 }
 ```
 
-**Proteger Rutas Admin:**
+## Recuperar contraseña con token y PHPMailer
+
+Aquí intenté hacerlo seguro y práctico:
+
+1. El usuario pone su correo.
+2. Si existe en BD, genero un token temporal.
+3. Guardo token + caducidad.
+4. Mando un correo con PHPMailer con un enlace para cambiar contraseña.
+5. Cuando entra al enlace, valido token y si está bien, dejo cambiar contraseña.
+6. Al final borro token para que no se pueda reutilizar.
+
+Parte del código que valida token:
+
 ```php
-// En adminPanel.vista.php y eliminarUsuario.controller.php
-if (!estaIdentificado() || !esAdmin()) {
-    header('Location: ../view/index.php?error=Acceso denegado');
-    exit;
-}
-
-// Validaciones adicionales
-if ($datosUsuarioEliminar['role'] === 'admin') {
-    // No permitir eliminar otros admins
-    exit;
-}
-if ($idEliminar === idUsuarioActual()) {
-    // No permitir auto-eliminación
-    exit;
-}
-```
-
-**Funciones Principales:**
-
-**1. Listar Usuarios (sin admins):**
-```php
-function obtenerTodosLosUsuarios($excluirAdmins = true) {
-    if ($excluirAdmins) {
-        $sql = "SELECT * FROM users WHERE role != 'admin' ORDER BY created_at DESC";
-    }
-    return $stmt->fetchAll();
-}
-```
-
-**2. Eliminar Usuario con Transacción:**
-```php
-function eliminarUsuario($userId) {
-    try {
-        $pdo->beginTransaction();
-        $stmt1->execute([':id' => $userId]); // DELETE pokemons
-        $stmt2->execute([':id' => $userId]); // DELETE users
-        $pdo->commit();
-        return true;
-    } catch (Exception $e) {
-        $pdo->rollBack();
+function verificarTokenRecuperacion($token) {
+    if (empty($token)) {
         return false;
     }
+
+    $nom_variable_connexio = userDbConnection();
+    $sql = "SELECT * FROM users WHERE reset_token = :token AND reset_token_expira > NOW() LIMIT 1";
+    $stmt = $nom_variable_connexio->prepare($sql);
+    $stmt->execute([':token' => $token]);
+    return $stmt->fetch();
 }
 ```
 
-**3. Contar Publicaciones:**
-```php
-function contarPublicacionesUsuario($userId) {
-    $sql = "SELECT COUNT(*) as total FROM pokemons WHERE user_id = :id";
-    return $stmt->fetch()['total'];
-}
-```
+## OAuth: lo que hice a mano y lo que hice con HybridAuth
 
-**Mostrar Enlace en Menú (solo si es admin):**
-```php
-<?php if (esAdmin()): ?>
-    <a href="view/adminPanel.vista.php">👨‍💼 Panel de Usuarios</a>
-<?php endif; ?>
-```
+En esta parte hice dos cosas distintas y eso me ayudó bastante a aprender.
 
-**Seguridad:** Autenticación + Autorización, transacciones SQL, confirmación JS antes de eliminar, prevención de auto-eliminación y eliminación de  admins.
+### Google OAuth (hecho por mi, sin librería)
 
----
+Con Google lo hice más "a mano":
 
-## 📚 Tecnologías Utilizadas
+- Creo la URL de autorización.
+- Guardo y reviso el state para seguridad.
+- Recibo el code de vuelta.
+- Cambio ese code por access_token.
+- Pido los datos del usuario.
+- Si existe, inicia sesión; si no, lo registro.
 
-**Backend:** PHP 8+, MySQL/MariaDB, PDO, Session Management  
-**Frontend:** HTML5, CSS3, JavaScript (Vanilla), AJAX (Fetch API)  
-**Seguridad:** Prepared Statements, Bcrypt, reCAPTCHA v2, MIME type validation  
-**Librerías:** PHPMailer (envío emails)
+Esto me sirvió para entender de verdad el flujo OAuth.
 
----
+### GitHub OAuth (con HybridAuth)
 
-## 🚀 Instalación
+Con GitHub usé HybridAuth porque quería comparar y ver la diferencia.
 
-```bash
-# 1. Importar BD
-mysql -u root -p < model/Pt03_Marcos_Lopez.sql
+- Configuro credenciales en el archivo de config.
+- Llamo a authenticate('GitHub').
+- La librería hace casi todo el flujo.
+- Recojo perfil y hago login/registro.
 
-# 2. Configurar env.php (credenciales BD, email, reCAPTCHA)
+La diferencia principal es que con Google hice OAuth puro por mi cuenta, y con GitHub usé HybridAuth para simplificar trabajo.
 
-# 3. Crear admin
-mysql -u root -p
-USE proyecte_servidor1;
-UPDATE users SET role = 'admin' WHERE username = 'tu_usuario';
+## Cierre
 
-# 4. Permisos de carpetas
-chmod 755 assets/img/userImg/
-```
+En resumen, con este proyecto he practicado:
 
-Acceder: `http://localhost/ProyecteServidor1/`
-
----
-
-## 🔒 Seguridad Implementada
-
-**General:** Prepared Statements, htmlspecialchars(), password_hash(), validación sesión  
-**Cookies:** HttpOnly (anti-XSS), tokens hasheados (SHA-256), expiración automática  
-**Archivos:** Validación MIME real (finfo), límite 5MB, nombres únicos timestamp  
-**Acceso:** Autenticación + autorización roles, prevención escalada privilegios
-
----
-
-**© 2026 PokéNet Social - Proyecto Educativo**
+Marcos López

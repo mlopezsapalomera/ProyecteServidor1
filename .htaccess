@@ -4,8 +4,17 @@ ErrorDocument 404 /security/404.html
 Options -Indexes
 DirectoryIndex view/index.php
 
+# Bloquear acceso web a archivos sensibles
+<FilesMatch "^(env\.php|\.env|composer\.(json|lock)|\.gitignore)$">
+	Require all denied
+</FilesMatch>
+
 RewriteEngine On
 RewriteBase /ProyecteServidor1/
+
+# Bloquear acceso web a logs
+RewriteRule ^logs/ - [F,L,NC]
+RewriteRule ^.*\.log$ - [F,L,NC]
 
 # Entrada principal MVC sin index.php en raíz
 RewriteRule ^$ controller/home.controller.php [L,QSA]
