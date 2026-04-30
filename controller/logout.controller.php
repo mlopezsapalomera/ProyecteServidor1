@@ -3,7 +3,8 @@
 // Controlador para cerrar sesión
 
 require_once __DIR__ . '/../security/auth.php';
-require_once __DIR__ . '/../model/user.php';
+require_once __DIR__ . '/../model/user/db_connection.php';
+require_once __DIR__ . '/../model/user/remember.model.php';
 
 // Eliminar token de "Remember-me" si existe
 if (isset($_COOKIE['remember_token'])) {

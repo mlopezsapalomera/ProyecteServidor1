@@ -4,7 +4,8 @@
 
 header('Content-Type: application/json; charset=utf-8');
 
-require_once __DIR__ . '/../model/user.php';
+require_once __DIR__ . '/../model/user/db_connection.php';
+require_once __DIR__ . '/../model/user/account.model.php';
 require_once __DIR__ . '/../model/pokemon.php';
 
 // Obtener término de búsqueda
