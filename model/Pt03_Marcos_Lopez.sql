@@ -1,3 +1,4 @@
+
 -- REGLA DEL PROYECTO:
 -- Este archivo es la fuente unica del esquema y datos iniciales.
 -- Si hay cambios de base de datos, se actualiza este .sql directamente.
@@ -8,17 +9,30 @@ CREATE DATABASE `pt03_marcos_lopez` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicod
 USE `pt03_marcos_lopez`;
 
 -- Tabla principal: pokemons
--- Campos: id (PK), titulo, descripcion
+-- Campos: id (PK), titulo, descripcion, datos de la API de Pokemon
 CREATE TABLE `pokemons` (
 	`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	`titulo` VARCHAR(255) NOT NULL,
 	`descripcion` TEXT DEFAULT NULL,
 	`user_id` INT UNSIGNED DEFAULT NULL,
+	`pokemon_api_id` INT UNSIGNED DEFAULT NULL,
+	`pokemon_api_name` VARCHAR(100) DEFAULT NULL,
+	`tipo_principal` VARCHAR(50) DEFAULT NULL,
+	`tipo_secundario` VARCHAR(50) DEFAULT NULL,
+	`vida` SMALLINT UNSIGNED DEFAULT NULL,
+	`ataque` SMALLINT UNSIGNED DEFAULT NULL,
+	`defensa` SMALLINT UNSIGNED DEFAULT NULL,
+	`ataque_especial` SMALLINT UNSIGNED DEFAULT NULL,
+	`defensa_especial` SMALLINT UNSIGNED DEFAULT NULL,
+	`velocidad` SMALLINT UNSIGNED DEFAULT NULL,
+	`sprite_url` VARCHAR(255) DEFAULT NULL,
 	`created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`),
 	INDEX `idx_user_id` (`user_id`),
-	INDEX `idx_titulo` (`titulo`)
+	INDEX `idx_titulo` (`titulo`),
+	INDEX `idx_pokemon_api_id` (`pokemon_api_id`),
+	INDEX `idx_tipo_principal` (`tipo_principal`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Tabla de usuarios
@@ -54,6 +68,22 @@ CREATE TABLE `remember_tokens` (
   INDEX `idx_user_id` (`user_id`),
   INDEX `idx_expires_at` (`expires_at`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabla de tokens para API pública
+CREATE TABLE `api_tokens` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `token_hash` VARCHAR(255) NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `description` TEXT DEFAULT NULL,
+  `expires_at` DATETIME NOT NULL,
+  `last_used_at` DATETIME DEFAULT NULL,
+  `is_active` TINYINT(1) DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_token_hash` (`token_hash`),
+  INDEX `idx_is_active` (`is_active`),
+  INDEX `idx_expires_at` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Insertar usuarios de prueba

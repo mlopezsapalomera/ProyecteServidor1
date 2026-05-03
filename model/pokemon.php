@@ -45,7 +45,10 @@ function obtenerPokemons($limit = 100, $offset = 0, $orderBy = 'id', $orderDir =
 // Obtener pokemon por ID
 function obtenerPokemonPorId($id) {
     $nom_variable_connexio = pokemonDbConnection();
-    $sql = "SELECT * FROM pokemons WHERE id = :id";
+    $sql = "SELECT p.*, u.username AS autor_username, u.profile_image AS autor_profile_image, u.id AS autor_id
+            FROM pokemons p
+            LEFT JOIN users u ON p.user_id = u.id
+            WHERE p.id = :id";
     $stmt = $nom_variable_connexio->prepare($sql);
     $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
     $stmt->execute();
@@ -53,14 +56,25 @@ function obtenerPokemonPorId($id) {
 }
 
 // Insertar nuevo pokemon
-function insertarPokemon($titulo, $descripcion = null, $user_id = null) {
+function insertarPokemon($titulo, $descripcion = null, $user_id = null, $pokemon_api_id = null, $pokemon_api_name = null, $tipo_principal = null, $tipo_secundario = null, $vida = null, $ataque = null, $defensa = null, $ataque_especial = null, $defensa_especial = null, $velocidad = null, $sprite_url = null) {
     $nom_variable_connexio = pokemonDbConnection();
-    $sql = "INSERT INTO pokemons (titulo, descripcion, user_id) VALUES (:titulo, :descripcion, :user_id)";
+    $sql = "INSERT INTO pokemons (titulo, descripcion, user_id, pokemon_api_id, pokemon_api_name, tipo_principal, tipo_secundario, vida, ataque, defensa, ataque_especial, defensa_especial, velocidad, sprite_url) VALUES (:titulo, :descripcion, :user_id, :pokemon_api_id, :pokemon_api_name, :tipo_principal, :tipo_secundario, :vida, :ataque, :defensa, :ataque_especial, :defensa_especial, :velocidad, :sprite_url)";
     $stmt = $nom_variable_connexio->prepare($sql);
     return $stmt->execute([
         ':titulo' => $titulo,
         ':descripcion' => $descripcion,
-        ':user_id' => $user_id !== null ? (int)$user_id : null
+        ':user_id' => $user_id !== null ? (int)$user_id : null,
+        ':pokemon_api_id' => $pokemon_api_id !== null ? (int)$pokemon_api_id : null,
+        ':pokemon_api_name' => $pokemon_api_name,
+        ':tipo_principal' => $tipo_principal,
+        ':tipo_secundario' => $tipo_secundario,
+        ':vida' => $vida !== null ? (int)$vida : null,
+        ':ataque' => $ataque !== null ? (int)$ataque : null,
+        ':defensa' => $defensa !== null ? (int)$defensa : null,
+        ':ataque_especial' => $ataque_especial !== null ? (int)$ataque_especial : null,
+        ':defensa_especial' => $defensa_especial !== null ? (int)$defensa_especial : null,
+        ':velocidad' => $velocidad !== null ? (int)$velocidad : null,
+        ':sprite_url' => $sprite_url,
     ]);
 }
 

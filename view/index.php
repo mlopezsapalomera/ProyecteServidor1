@@ -285,6 +285,33 @@ function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
             <div class="modal-body">
                 <h2 id="modalTitulo" class="modal-titulo"></h2>
                 <p id="modalDescripcion" class="modal-descripcion"></p>
+                <div class="pokemon-detail-grid">
+                    <div class="pokemon-detail-item">
+                        <span class="pokemon-detail-label">Tipo principal</span>
+                        <div id="modalTipoPrincipal" class="pokemon-detail-value">-</div>
+                    </div>
+                    <div class="pokemon-detail-item">
+                        <span class="pokemon-detail-label">Tipo secundario</span>
+                        <div id="modalTipoSecundario" class="pokemon-detail-value">-</div>
+                    </div>
+                    <div class="pokemon-detail-item">
+                        <span class="pokemon-detail-label">Vida</span>
+                        <div id="modalVida" class="pokemon-detail-value">-</div>
+                    </div>
+                    <div class="pokemon-detail-item">
+                        <span class="pokemon-detail-label">Daño</span>
+                        <div id="modalAtaque" class="pokemon-detail-value">-</div>
+                    </div>
+                    <div class="pokemon-detail-item">
+                        <span class="pokemon-detail-label">Defensa</span>
+                        <div id="modalDefensa" class="pokemon-detail-value">-</div>
+                    </div>
+                    <div class="pokemon-detail-item">
+                        <span class="pokemon-detail-label">Velocidad</span>
+                        <div id="modalVelocidad" class="pokemon-detail-value">-</div>
+                    </div>
+                </div>
+                <div id="modalTipos" class="pokemon-type-row"></div>
                 <p id="modalFecha" class="modal-fecha"></p>
             </div>
             <div id="modalActions" class="modal-actions" style="display: none;">
@@ -314,6 +341,13 @@ function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
         const autor = document.getElementById('modalAutor');
         const titulo = document.getElementById('modalTitulo');
         const descripcion = document.getElementById('modalDescripcion');
+        const tipoPrincipal = document.getElementById('modalTipoPrincipal');
+        const tipoSecundario = document.getElementById('modalTipoSecundario');
+        const vida = document.getElementById('modalVida');
+        const ataque = document.getElementById('modalAtaque');
+        const defensa = document.getElementById('modalDefensa');
+        const velocidad = document.getElementById('modalVelocidad');
+        const tipos = document.getElementById('modalTipos');
         const fecha = document.getElementById('modalFecha');
         const actions = document.getElementById('modalActions');
         const editBtn = document.getElementById('modalEditBtn');
@@ -346,6 +380,22 @@ function e($str) { return htmlspecialchars((string)$str, ENT_QUOTES, 'UTF-8'); }
         autor.textContent = post.autor_username || 'Anónimo';
         titulo.innerHTML = '🐾 ' + post.titulo;
         descripcion.innerHTML = post.descripcion ? '📝 ' + post.descripcion : '<em style="color: #999;">Sin descripción</em>';
+        tipoPrincipal.textContent = post.tipo_principal || 'Sin tipo principal';
+        tipoSecundario.textContent = post.tipo_secundario || '-';
+        vida.textContent = post.vida !== null && post.vida !== undefined ? post.vida : '-';
+        ataque.textContent = post.ataque !== null && post.ataque !== undefined ? post.ataque : '-';
+        defensa.textContent = post.defensa !== null && post.defensa !== undefined ? post.defensa : '-';
+        velocidad.textContent = post.velocidad !== null && post.velocidad !== undefined ? post.velocidad : '-';
+        tipos.innerHTML = '';
+        if (post.tipo_principal) {
+            tipos.innerHTML += '<span class="pokemon-type-pill">' + post.tipo_principal + '</span>';
+        }
+        if (post.tipo_secundario) {
+            tipos.innerHTML += '<span class="pokemon-type-pill">' + post.tipo_secundario + '</span>';
+        }
+        if (!tipos.innerHTML) {
+            tipos.innerHTML = '<span class="pokemon-type-pill">Sin tipos</span>';
+        }
         
         // Formatear fecha si existe
         if (post.created_at) {

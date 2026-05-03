@@ -39,3 +39,8 @@ assets/img/userImg/*
 *.backup
 *.bak
 *.sql.gz
+
+# Documento personal de apuntes
+readme2.md
+
+
