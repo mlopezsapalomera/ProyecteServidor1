@@ -51,12 +51,21 @@ try {
 		throw new Exception('No se pudo obtener el identificador del proveedor OAuth');
 	}
 
-	if (empty($userProfile->email)) {
-		throw new Exception('Tu cuenta de GitHub no comparte email. No se puede completar el registro OAuth.');
-	}
-
 	// Obtener token de acceso (opcional, para futuras llamadas a API)
 	$accessToken = $adapter->getAccessToken();
+
+	// Resolver email de forma robusta para GitHub:
+	// 1) Perfil HybridAuth, 2) API /user/emails, 3) email tecnico estable.
+	$email = trim((string)($userProfile->email ?? ''));
+	if ($provider === 'GitHub' && $email === '') {
+		$email = obtenerEmailGithubDesdeApi($adapter, $accessToken);
+	}
+	if ($provider === 'GitHub' && $email === '') {
+		$email = construirEmailTecnicoGithub($userProfile);
+	}
+	if ($email === '') {
+		throw new Exception('No se pudo resolver un email para completar la autenticacion OAuth.');
+	}
 
 	// Buscar si el usuario ya existe con este proveedor OAuth
 	$usuarioExistente = obtenerUsuarioPorOAuthUID($provider, $userProfile->identifier);
@@ -75,7 +84,7 @@ try {
 	}
 
 	// Usuario nuevo: verificar si el email ya está registrado
-	$usuarioPorEmail = obtenerUsuarioPorEmail($userProfile->email);
+	$usuarioPorEmail = obtenerUsuarioPorEmail($email);
 
 	if ($usuarioPorEmail) {
 		// Email ya existe, vincular cuenta OAuth
@@ -106,7 +115,7 @@ try {
 	// Crear usuario con OAuth
 	$nuevoUserId = crearUsuarioOAuth(
 		$username,
-		$userProfile->email,
+		$email,
 		$provider,
 		$userProfile->identifier,
 		json_encode($accessToken),
@@ -190,4 +199,146 @@ function descargarImagenPerfil($photoURL, $username) {
 
 	// Si falla, usar imagen por defecto
 	return 'userDefaultImg.jpg';
+}
+
+/**
+ * Obtiene un email utilizable desde la API de GitHub cuando el perfil OAuth no lo trae.
+ */
+function obtenerEmailGithubDesdeApi($adapter, $accessToken) {
+	$email = '';
+
+	try {
+		$response = $adapter->apiRequest('user/emails');
+		$email = seleccionarMejorEmailGithub($response);
+		if ($email !== '') {
+			return $email;
+		}
+	} catch (Exception $e) {
+		error_log('GitHub apiRequest user/emails fallo: ' . $e->getMessage());
+	}
+
+	$token = '';
+	if (is_array($accessToken) && !empty($accessToken['access_token'])) {
+		$token = (string)$accessToken['access_token'];
+	}
+	if ($token === '') {
+		return '';
+	}
+
+	$response = githubApiGetUserEmails($token);
+	return seleccionarMejorEmailGithub($response);
+}
+
+/**
+ * Selecciona el mejor email posible del array devuelto por GitHub.
+ */
+function seleccionarMejorEmailGithub($emails) {
+	if (!is_array($emails) || empty($emails)) {
+		return '';
+	}
+
+	$candidatos = [];
+	foreach ($emails as $item) {
+		if (!is_array($item)) {
+			continue;
+		}
+
+		$email = isset($item['email']) ? trim((string)$item['email']) : '';
+		if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+			continue;
+		}
+
+		$candidatos[] = [
+			'email' => $email,
+			'primary' => !empty($item['primary']),
+			'verified' => !empty($item['verified'])
+		];
+	}
+
+	if (empty($candidatos)) {
+		return '';
+	}
+
+	foreach ($candidatos as $candidato) {
+		if ($candidato['primary'] && $candidato['verified']) {
+			return $candidato['email'];
+		}
+	}
+	foreach ($candidatos as $candidato) {
+		if ($candidato['verified']) {
+			return $candidato['email'];
+		}
+	}
+	foreach ($candidatos as $candidato) {
+		if ($candidato['primary']) {
+			return $candidato['email'];
+		}
+	}
+
+	return $candidatos[0]['email'];
+}
+
+/**
+ * Llamada HTTP simple a GitHub API para obtener emails del usuario.
+ */
+function githubApiGetUserEmails($token) {
+	$url = 'https://api.github.com/user/emails';
+	$headers = [
+		'Accept: application/vnd.github+json',
+		'Authorization: Bearer ' . $token,
+		'User-Agent: PokeNetOAuth'
+	];
+
+	if (function_exists('curl_init')) {
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+		$body = curl_exec($ch);
+		$httpCode = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		curl_close($ch);
+
+		if ($body === false || $httpCode < 200 || $httpCode >= 300) {
+			return [];
+		}
+
+		$data = json_decode($body, true);
+		return is_array($data) ? $data : [];
+	}
+
+	$context = stream_context_create([
+		'http' => [
+			'method' => 'GET',
+			'timeout' => 10,
+			'header' => implode("\r\n", $headers)
+		]
+	]);
+
+	$body = @file_get_contents($url, false, $context);
+	if ($body === false) {
+		return [];
+	}
+
+	$data = json_decode($body, true);
+	return is_array($data) ? $data : [];
+}
+
+/**
+ * Construye un email tecnico estable para GitHub cuando no hay ninguno disponible.
+ */
+function construirEmailTecnicoGithub($userProfile) {
+	$identifier = isset($userProfile->identifier) ? trim((string)$userProfile->identifier) : '';
+	if ($identifier === '') {
+		return '';
+	}
+
+	$username = isset($userProfile->displayName) ? trim((string)$userProfile->displayName) : '';
+	$username = strtolower((string)preg_replace('/[^a-zA-Z0-9_]/', '_', $username));
+	$username = trim($username, '_');
+	if ($username === '') {
+		$username = 'githubuser';
+	}
+
+	return 'github_' . $identifier . '_' . $username . '@users.noreply.local';
 }
