@@ -6,7 +6,9 @@
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../model/user.php';
+require_once __DIR__ . '/../model/user/db_connection.php';
+require_once __DIR__ . '/../model/user/account.model.php';
+require_once __DIR__ . '/../model/user/oauth.model.php';
 require_once __DIR__ . '/../security/auth.php';
 
 use Hybridauth\Hybridauth;

@@ -2,7 +2,9 @@
 
 require_once __DIR__ . '/../security/csrf.php';
 require_once __DIR__ . '/../env.php';
-require_once __DIR__ . '/../model/user.php';
+require_once __DIR__ . '/../model/user/db_connection.php';
+require_once __DIR__ . '/../model/user/account.model.php';
+require_once __DIR__ . '/../model/user/recovery.model.php';
 
 csrfRequireOrRedirect('../view/login.vista.php');
 

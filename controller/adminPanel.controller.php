@@ -3,7 +3,8 @@
 // Controlador para panel de administración
 
 require_once __DIR__ . '/../security/auth.php';
-require_once __DIR__ . '/../model/user.php';
+require_once __DIR__ . '/../model/user/db_connection.php';
+require_once __DIR__ . '/../model/user/admin.model.php';
 
 if (!estaIdentificado() || !esAdmin()) {
     header('Location: ../index.php?error=' . urlencode('Acceso denegado. Solo administradores.'));

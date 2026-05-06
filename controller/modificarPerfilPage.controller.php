@@ -2,7 +2,8 @@
 // controller/modificarPerfilPage.controller.php
 // Renderiza la vista de edición de perfil
 
-require_once __DIR__ . '/../model/user.php';
+require_once __DIR__ . '/../model/user/db_connection.php';
+require_once __DIR__ . '/../model/user/account.model.php';
 require_once __DIR__ . '/../security/auth.php';
 
 if (!estaIdentificado()) {

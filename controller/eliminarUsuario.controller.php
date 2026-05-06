@@ -2,7 +2,9 @@
 // controller/eliminarUsuario.controller.php
 // Controlador para eliminar usuarios (solo para administradores)
 
-require_once __DIR__ . '/../model/user.php';
+require_once __DIR__ . '/../model/user/db_connection.php';
+require_once __DIR__ . '/../model/user/account.model.php';
+require_once __DIR__ . '/../model/user/admin.model.php';
 require_once __DIR__ . '/../security/auth.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

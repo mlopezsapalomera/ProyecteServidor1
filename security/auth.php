@@ -63,8 +63,9 @@ function intentarLoginAutomatico() {
         return false;
     }
     
-    // Cargar funciones de usuario
-    require_once __DIR__ . '/../model/user.php';
+    // Cargar solo el modelo necesario para recordar sesión.
+    require_once __DIR__ . '/../model/user/db_connection.php';
+    require_once __DIR__ . '/../model/user/remember.model.php';
     
     // Verificar el token
     $usuario = verificarRememberToken($_COOKIE['remember_token']);
